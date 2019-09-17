@@ -1,0 +1,9 @@
+BOARD:
+"b"b"b"bb"b"b"b
+sdfghjkas;dfkja;dlkfjal;ksjf
+
+""b"b"b"b."."."."".".".
+
+sd;fja;lsdjflka;sjf
+
+".r"r"r"r""r"r"r"rr"r"r"r"
