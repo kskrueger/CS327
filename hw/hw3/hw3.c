@@ -32,12 +32,28 @@ int main() {
 	return 0;
 }
 
+int frf(int a, int b) {
+    int i;
+    int output = a;
+    for (i = 0; i < b; i++) {
+        output *= a;
+    }
+    return output;
+}
+
 // initialize the array with the int value
 void initialize(char digits[], unsigned numdigits, unsigned value) {
+    char temp[numdigits]; // temporary string for the value to load into
+    sprintf(temp, "%d", value); // convert value integer to a temp string
+    int length = strlen(temp); // find length of temp string
     int i;
-    // load integer digits into the char array using the mod operator and int division to get one at a time
+    // load each digit of temp string into the full digits string
     for (i = 0; i < numdigits; i++) {
-        digits[i] = '0' + (int) (((int)value/ (int)pow(10, (numdigits-1-i)))%10);
+        if (i >= numdigits-length) {
+            digits[i] = temp[length-(numdigits-i)];
+        } else {
+            digits[i] = '0';
+        }
     }
 }
 
