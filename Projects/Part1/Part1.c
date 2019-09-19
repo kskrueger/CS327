@@ -28,6 +28,7 @@ char board[8][8];
 
 void initialize_array(int rows, int cols, char array[rows][cols]);
 void scan_in_array(int rows, int cols, char array[rows][cols], FILE *fptr);
+int search_word(char *word, FILE *file);
 void print_array(int rows, int cols, char array[rows][cols]);
 
 int main() {
@@ -37,9 +38,10 @@ int main() {
     if (input_file == NULL) {
         printf("Can't open file\n");
     }
-    char out;
-    fscanf(input_file, "BOARD%c", &out);
+    search_word("BOARD:", input_file);
 
+
+    search_word("BOARD:", input_file);
     scan_in_array(8, 8, board, input_file);
 
     print_array(8, 8, board);
@@ -65,6 +67,33 @@ void scan_in_array(int rows, int cols, char array[rows][cols], FILE *fptr) {
             input = fgetc(fptr);
         }
     }
+}
+
+int search_word(char *word, FILE *file) {
+    fseek(file, 0, SEEK_SET);
+    int found = 0;
+    char ch = fgetc(file);
+    int length = strlen(word);
+    int index = 0;
+    while (!found && ch != EOF) {
+        index = ftell(file);
+        if (ch == word[0]) {
+            int i;
+            for (i = 0; i < length; i++) {
+                if (ch != word[i]) {
+                    found = 0;
+                    break;
+                } else {
+                    found = 1;
+                }
+                ch = fgetc(file);
+            }
+        }
+        fseek(file, index, SEEK_SET);
+        ch = fgetc(file);
+    }
+    fseek(file, index-1+length, SEEK_SET);
+    return index-1;
 }
 
 void print_array(int rows, int cols, char array[rows][cols]) {

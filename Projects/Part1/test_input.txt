@@ -1,3 +1,6 @@
+RULES: no capture multiple jumps
+
+
 BOARD:
 "b"b"b"bb"b"b"b
 sdfghjkas;dfkja;dlkfjal;ksjf
