@@ -1,12 +1,17 @@
-RULES: no capture multiple jumps
-
-
+RULES: dfja;slfjk;as
+# no capture
+capture multiple jumps
+djfals;kfsaklfj;
+TURN: black
+dfaklsdjflas;d
 BOARD:
 "b"b"b"bb"b"b"b
 sdfghjkas;dfkja;dlkfjal;ksjf
-
+\n
+\n
 ""b"b"b"b."."."."".".".
-
-sd;fja;lsdjflka;sjf
-
 ".r"r"r"r""r"r"r"rr"r"r"r"
+
+MOVES:
+a1->b2->c3->d4 f2->e3
+x1->z9
