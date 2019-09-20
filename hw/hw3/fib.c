@@ -34,15 +34,6 @@ int main() {
     return 0;
 }
 
-int frf(int a, int b) {
-    int i;
-    int output = a;
-    for (i = 0; i < b; i++) {
-        output *= a;
-    }
-    return output;
-}
-
 // initialize the array with the int value
 void initialize(char digits[], unsigned numdigits, unsigned value) {
     char temp[numdigits]; // temporary string for the value to load into
