@@ -28,10 +28,19 @@
 const int ROWS = 8;
 const int COLS = 8;
 
-struct point {
+struct point_node {
     int c;
     int r;
+    struct point_node* next;
 };
+typedef struct point_node* point;
+
+struct move_node {
+    int length;
+    point point;
+    struct move_node* next;
+};
+typedef struct move_node* move;
 
 void initialize_array(int rows, int cols, char array[rows][cols]);
 int scan_in_array(int rows, int cols, char array[rows][cols], FILE *fptr);
@@ -39,7 +48,7 @@ void array_count(int rows, int cols, char array[rows][cols],
         int* red_kings, int* red_pawns, int* black_kings, int* black_pawns);
 int check_board(int rows, int cols, char array[rows][cols]);
 int search_word(char *word, FILE *file, int start);
-struct point* scan_move(FILE *file, int start, int *length);
+move scan_move(FILE *file, int start);
 void print_array(int rows, int cols, char array[rows][cols]);
 
 int main() {
@@ -104,18 +113,21 @@ int main() {
         return -1;
     }
 
-    int moves_length = 0;
-    struct point *moves;
+    move head;
     if ((index = search_word("MOVES:", input_file, 0)) == -1) {
         printf("ERROR: MOVES not found\n");
         return -1;
     } else {
         // TODO: array of move arrays, (point** ??)
-        moves = scan_move(input_file, index, &moves_length);
+        head = scan_move(input_file, index);
+        while (head->next != NULL) {
+            while (head->point->next != NULL) {
+                printf("%d: %d, %d\n", head->length, head->point->r, head->point->c);
+                head->point = head->point->next;
+            }
+            head = head->next;
+        }
     }
-    /*for (int i = 0; i < moves_length; i++) {
-        printf("%d, %d\n", moves[i].r, moves[i].c);
-    }*/
 
     array_count(ROWS, COLS, board, &red_kings, &red_pawns, &black_kings, &black_pawns);
 
@@ -225,27 +237,42 @@ int search_word(char *word, FILE *file, int start) {
     return index-1;
 }
 
-struct point* scan_move(FILE *file, int start, int *length) {
-    int index = search_word("->", file, start);
-    fseek(file, index, SEEK_SET);
-    char ch = fgetc(file);
-    int count = 1;
-    while (ch != ' ' && ch != EOF && ch != '\n' && ch != '\t') {
-        if (ch == '-') count++;
-        ch = fgetc(file);
-    }
+move scan_move(FILE *file, int start) {
+    move head = malloc(sizeof(struct move_node));
+    head->length = 0;
+    head->point = NULL;
+    head->next = NULL;
+    move current = head;
 
-    struct point *moves = malloc(sizeof(struct point) * count);
-    char letter;
-    int number;
-    for (int i = 0; i < count; i++) {
-        fseek(file, index-2+i*4, SEEK_SET);
-        fscanf(file, "%c%d", &letter, &number);
-        moves[i].r = number;
-        moves[i].c = letter - 'a';
+    int index = start;
+    char ch = fgetc(file);
+    while (ch != EOF) {
+        if ((index = search_word("->", file, index-1)) == -1) break;
+        int count = 0;
+        char letter;
+        int number;
+        ch = fgetc(file);
+        point currentpt = malloc(sizeof(struct point_node));
+        current->point = currentpt;
+        for (int i = 0; ch != ' ' && ch != EOF && ch != '\n' && ch != '\t'; index+=4) {
+            fseek(file, index-2+i, SEEK_SET);
+            fscanf(file, "%c%d", &letter, &number);
+            ch = fgetc(file);
+            count++;
+            currentpt->r = number;
+            currentpt->c = letter - 'a';
+            point nextpt = malloc(sizeof(struct point_node));
+            currentpt->next = nextpt;
+            currentpt = currentpt->next;
+        }
+        currentpt->next = NULL;
+        current->length = count;
+        move next = malloc(sizeof(struct move_node));
+        current->next = next;
+        current = current->next;
     }
-    *length = count;
-    return moves;
+    current->next = NULL;
+    return head;
 }
 
 void print_array(int rows, int cols, char array[rows][cols]) {
