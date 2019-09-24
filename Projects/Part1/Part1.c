@@ -24,6 +24,13 @@
  *  e3->d4
  *  d4->b6
  */
+/* OUTPUT
+ * VALID INPUT
+ * Initial configuration:
+ * Turn: red
+ * Red: 0 kings, 12 pawns
+ * Black: 0 kings, 12 pawns
+ */
 
 const int ROWS = 8;
 const int COLS = 8;
@@ -47,71 +54,80 @@ int scan_in_array(int rows, int cols, char array[rows][cols]);
 void array_count(int rows, int cols, char array[rows][cols],
         int* red_kings, int* red_pawns, int* black_kings, int* black_pawns);
 int check_board(int rows, int cols, char array[rows][cols]);
-int search_word(char *word);
+int search_word(char *word, int *line_index);
 move scan_moves();
 void print_array(int rows, int cols, char array[rows][cols]);
-int getLineNumber();
+int getLineNumber(int index);
 
-        int main() {
-    int index;
+int main() {
+    int index = 0, line_index = 0, index_last = 0;
     char board[ROWS][COLS];
-    int red_kings, red_pawns, black_kings, black_pawns;
+    int red_kings = 0, red_pawns = 0, black_kings = 0, black_pawns = 0;
     initialize_array(ROWS, COLS, board);
 
     int capture_on = -1, multiple_jumps_on = -1, turn_red = -1, board_flipped;
-    if ((index = search_word("RULES:")) == -1) {
-        fprintf(stderr, "Error near line %d: expecting 'RULES:'\n", getLineNumber());
+    if ((index = search_word("RULES:", &line_index)) == -1) {
+        fprintf(stderr, "Error near line %d: expecting 'RULES:'\n", getLineNumber(index_last));
         return -1;
     } else {
-        if (search_word("no capture") != -1) {
+        if ((index = search_word("no capture", &line_index)) != -1) {
+            index_last = line_index;
             capture_on = 0;
-        } else if (search_word("capture") != -1) {
+        } else if ((index = search_word("capture", &line_index)) != -1) {
+            index_last = line_index;
             capture_on = 1;
         } else {
-            fprintf(stderr, "Error near line %d: expecting 'capture' or 'no capture'\n", getLineNumber());
+            fprintf(stderr, "Error near line %d: expecting 'capture' or 'no capture'\n", getLineNumber(index_last));
             return -1;
         }
 
-        if (search_word("multiple jumps") != -1) {
+        if ((index = search_word("multiple jumps", &line_index)) != -1) {
+            index_last = line_index;
             multiple_jumps_on = 1;
-        } else if (search_word("single jumps") != -1) {
+        } else if ((index = search_word("single jumps", &line_index)) != -1) {
+            index_last = line_index;
             multiple_jumps_on = 0;
         } else {
-            fprintf(stderr, "Error: expecting 'multiple jumps' or 'single jumps'\n");
+            fprintf(stderr, "Error near line %d: expecting 'multiple jumps' or 'single jumps'\n", getLineNumber(index_last));
             return -1;
         }
     }
 
-    if ((index = search_word("TURN:")) == -1) {
-        fprintf(stderr, "Error near line %d: expecting 'TURN:'\n", getLineNumber());
+    if ((index = search_word("TURN:", &line_index)) == -1) {
+        fprintf(stderr, "Error near line %d: expecting 'TURN:'\n", getLineNumber(index_last));
         return -1;
     } else {
-        if (search_word("red") != -1) {
+        if ((index = search_word("red", &line_index)) != -1) {
+            index_last = line_index;
             turn_red = 1;
-        } else if (search_word("black") != -1) {
+        } else if ((index = search_word("black", &line_index)) != -1) {
+            index_last = line_index;
             turn_red = 0;
         } else {
-            fprintf(stderr, "Error: expecting 'red' or 'black' after 'TURN:'\n");
+            fprintf(stderr, "Error near line %d: expecting 'red' or 'black' after 'TURN:'\n", index_last);
+            return -1;
         }
     }
 
-    if (search_word("BOARD:") == -1) {
-        fprintf(stderr, "Error near line %d: expecting 'BOARD:'\n", getLineNumber());
+    if ((index = search_word("BOARD:", &line_index) == -1)) {
+        fprintf(stderr, "Error near line %d: expecting 'BOARD:'\n", getLineNumber(index_last));
         return -1;
     }
+    index_last = line_index;
+
     if (scan_in_array(ROWS, COLS, board) == -1) {
-        fprintf(stderr, "Error: issue with scanning the board\n");
+        fprintf(stderr, "Error near line %d: issue with scanning the board\n", getLineNumber(index_last));
         return -1;
     }
 
     board_flipped = check_board(ROWS, COLS, board);
     if (board_flipped == -1) {
-        fprintf(stderr, "Error: Board was invalid\n");
+        fprintf(stderr, "Error near line %d: Board was invalid\n", getLineNumber(index_last));
         return -1;
     }
 
-    if ((index = search_word("MOVES:")) == -1) {
-        fprintf(stderr, "Error near line %d: expecting 'MOVES:'\n", getLineNumber());
+    if ((index = search_word("MOVES:", &line_index)) == -1) {
+        fprintf(stderr, "Error near line %d: expecting 'MOVES:'\n", getLineNumber(index_last));
         return -1;
     } else {
         // Moves will likely be used more in future parts I assume, so this should be ready for future
@@ -199,7 +215,7 @@ int check_board(int rows, int cols, char array[rows][cols]) {
     return !black_square;
 }
 
-int search_word(char *word) {
+int search_word(char *word, int *outer_index) {
     int found = 0;
     char ch = fgetc(stdin);
     int length = strlen(word);
@@ -230,7 +246,8 @@ int search_word(char *word) {
         return -1;
     }
     fseek(stdin, index-1+length, SEEK_SET);
-    return index-1;
+    *outer_index = index+length;
+    return index+-1;
     //return 0;
 }
 
@@ -243,8 +260,9 @@ move scan_moves(int start) {
 
     int index = start;
     char ch = fgetc(stdin);
+    int line_index;
     while (ch != EOF) {
-        if ((index = search_word("->")) == -1) break;
+        if ((index = search_word("->", &line_index)) == -1) break;
         int count = 0;
         char letter;
         int number;
@@ -287,21 +305,14 @@ void print_array(int rows, int cols, char array[rows][cols]) {
     fprintf(stdout, "\n");
 }
 
-int getLineNumber() {
-    int start_index = ftell(stdin);
+int getLineNumber(int index) {
     fseek(stdin, 0, SEEK_SET);
-    int count = 0;
+    int count = 1;
+    char ch;
     int i;
-    for (i = 0; ftell(stdin) <= start_index; i++) {
-        if (fgetc(stdin) == '\n') count++;
+    for (i = 0; i <= index + 5; i++) {
+        ch = fgetc(stdin);
+        if (ch == '\n' || ch == '\r') count++;
     }
     return count;
 }
-
-/* OUTPUT
- * VALID INPUT
- * Initial configuration:
- * Turn: red
- * Red: 0 kings, 12 pawns
- * Black: 0 kings, 12 pawns
- */
