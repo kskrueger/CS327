@@ -35,6 +35,7 @@
 const int ROWS = 8;
 const int COLS = 8;
 
+// move and point structures to likely be used in later later parts
 struct point_node {
     int c;
     int r;
