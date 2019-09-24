@@ -43,103 +43,99 @@ struct move_node {
 typedef struct move_node* move;
 
 void initialize_array(int rows, int cols, char array[rows][cols]);
-int scan_in_array(int rows, int cols, char array[rows][cols], FILE *fptr);
+int scan_in_array(int rows, int cols, char array[rows][cols]);
 void array_count(int rows, int cols, char array[rows][cols],
         int* red_kings, int* red_pawns, int* black_kings, int* black_pawns);
 int check_board(int rows, int cols, char array[rows][cols]);
-int search_word(char *word, FILE *file, int start);
-move scan_move(FILE *file, int start);
+int search_word(char *word);
+move scan_moves();
 void print_array(int rows, int cols, char array[rows][cols]);
+int getLineNumber();
 
-int main() {
+        int main() {
     int index;
     char board[ROWS][COLS];
     int red_kings, red_pawns, black_kings, black_pawns;
     initialize_array(ROWS, COLS, board);
-    FILE *input_file = fopen("/Users/kskrueger/Documents/Classes/CS327/Code/cs327/Projects/Part1/test_input3.txt", "r");
-    if (input_file == NULL) {
-        printf("RULES: Can't open file\n");
-        return -1;
-    }
 
     int capture_on = -1, multiple_jumps_on = -1, turn_red = -1, board_flipped;
-    if ((index = search_word("RULES:", input_file, 0)) == -1) {
-        printf("ERROR: RULES not found!\n");
+    if ((index = search_word("RULES:")) == -1) {
+        fprintf(stderr, "Error near line %d: expecting 'RULES:'\n", getLineNumber());
+        return -1;
     } else {
-        if (search_word("no capture", input_file, index) != -1) {
+        if (search_word("no capture") != -1) {
             capture_on = 0;
-        } else if (search_word("capture", input_file, index) != -1) {
+        } else if (search_word("capture") != -1) {
             capture_on = 1;
         } else {
-            printf("ERROR: Capture rule not stated\n");
+            fprintf(stderr, "Error near line %d: expecting 'capture' or 'no capture'\n", getLineNumber());
             return -1;
         }
 
-        if (search_word("multiple jumps", input_file, index) != -1) {
+        if (search_word("multiple jumps") != -1) {
             multiple_jumps_on = 1;
-        } else if (search_word("single jumps", input_file, index) != -1) {
+        } else if (search_word("single jumps") != -1) {
             multiple_jumps_on = 0;
         } else {
-            printf("ERROR: Jumps rule not stated\n");
+            fprintf(stderr, "Error: expecting 'multiple jumps' or 'single jumps'\n");
             return -1;
         }
     }
 
-    if ((index = search_word("TURN:", input_file, 0)) == -1) {
-        printf("ERROR: TURN not found!\n");
+    if ((index = search_word("TURN:")) == -1) {
+        fprintf(stderr, "Error near line %d: expecting 'TURN:'\n", getLineNumber());
         return -1;
     } else {
-        if (search_word("red", input_file, index) != -1) {
+        if (search_word("red") != -1) {
             turn_red = 1;
-        } else if (search_word("black", input_file, index) != -1) {
+        } else if (search_word("black") != -1) {
             turn_red = 0;
         } else {
-            printf("ERROR: Turn not stated\n");
+            fprintf(stderr, "Error: expecting 'red' or 'black' after 'TURN:'\n");
         }
     }
 
-    if (search_word("BOARD:", input_file, index) == -1) {
-        printf("ERROR: BOARD not found\n");
+    if (search_word("BOARD:") == -1) {
+        fprintf(stderr, "Error near line %d: expecting 'BOARD:'\n", getLineNumber());
         return -1;
     }
-    if (scan_in_array(ROWS, COLS, board, input_file) == -1) {
-        printf("ERROR: Board scan error\n");
+    if (scan_in_array(ROWS, COLS, board) == -1) {
+        fprintf(stderr, "Error: issue with scanning the board\n");
         return -1;
     }
 
     board_flipped = check_board(ROWS, COLS, board);
     if (board_flipped == -1) {
-        printf("ERROR: Board invalid\n");
+        fprintf(stderr, "Error: Board was invalid\n");
         return -1;
     }
 
-    move head;
-    if ((index = search_word("MOVES:", input_file, 0)) == -1) {
-        printf("ERROR: MOVES not found\n");
+    if ((index = search_word("MOVES:")) == -1) {
+        fprintf(stderr, "Error near line %d: expecting 'MOVES:'\n", getLineNumber());
         return -1;
     } else {
-        // TODO: array of move arrays, (point** ??)
-        head = scan_move(input_file, index);
+        // Moves will likely be used more in future parts I assume, so this should be ready for future
+        /* PRINT POINTS
+        move head;
+        head = scan_moves(input_file, index);
         while (head->next != NULL) {
             while (head->point->next != NULL) {
                 printf("%d: %d, %d\n", head->length, head->point->r, head->point->c);
                 head->point = head->point->next;
             }
             head = head->next;
-        }
+        }*/
     }
 
     array_count(ROWS, COLS, board, &red_kings, &red_pawns, &black_kings, &black_pawns);
 
-    printf("VALID INPUT\n");
-    printf("Initial configuration\n");
-    printf("Turn: %s\n", turn_red ? "red" : "black");
-    printf("Red: %d kings, %d pawns\n", red_kings, red_pawns);
-    printf("Black: %d kings, %d pawns\n", black_kings, black_pawns);
-    if (board_flipped) printf("Flipped board");
-
+    fprintf(stdout, "VALID INPUT\n");
+    fprintf(stdout, "Initial configuration\n");
+    fprintf(stdout, "Turn: %s\n", turn_red ? "red" : "black");
+    fprintf(stdout, "Red: %d kings, %d pawns\n", red_kings, red_pawns);
+    fprintf(stdout, "Black: %d kings, %d pawns\n", black_kings, black_pawns);
+    //if (board_flipped) fprintf(stdout, "Flipped board");
     //print_array(ROWS, COLS, board);
-    fclose(input_file);
 }
 
 void initialize_array(int rows, int cols, char array[rows][cols]) {
@@ -151,8 +147,8 @@ void initialize_array(int rows, int cols, char array[rows][cols]) {
     }
 }
 
-int scan_in_array(int rows, int cols, char array[rows][cols], FILE *fptr) {
-    char input = fgetc(fptr);
+int scan_in_array(int rows, int cols, char array[rows][cols]) {
+    char input = fgetc(stdin);
     int r = 0;
     int c = 0;
     for (r = 0; r < rows && input != EOF; r++) {
@@ -161,12 +157,13 @@ int scan_in_array(int rows, int cols, char array[rows][cols], FILE *fptr) {
                 array[r][c] = input;
                 c++;
             }
-            input = fgetc(fptr);
+            input = fgetc(stdin);
         }
     }
     if (c != cols) {
         return -1;
     }
+    return 0;
 }
 
 void array_count(int rows, int cols, char array[rows][cols],
@@ -202,15 +199,14 @@ int check_board(int rows, int cols, char array[rows][cols]) {
     return !black_square;
 }
 
-int search_word(char *word, FILE *file, int start) {
-    fseek(file, start, SEEK_SET);
+int search_word(char *word) {
     int found = 0;
-    char ch = fgetc(file);
+    char ch = fgetc(stdin);
     int length = strlen(word);
     int index = 0;
     int comment = 0;
     while (!found && ch != EOF) {
-        index = ftell(file);
+        index = ftell(stdin);
         if (ch == '#' || comment) {
             comment = 1;
             if (ch == '\n') comment = 0;
@@ -223,21 +219,22 @@ int search_word(char *word, FILE *file, int start) {
                 } else {
                     found = 1;
                 }
-                ch = fgetc(file);
+                ch = fgetc(stdin);
             }
         }
-        fseek(file, index, SEEK_SET);
-        ch = fgetc(file);
+        fseek(stdin, index, SEEK_SET);
+        ch = fgetc(stdin);
     }
-    if (ch == EOF) {
-        fseek(file, 0, SEEK_SET);
+    if (ch == EOF || !found) {
+        fseek(stdin, 0, SEEK_SET);
         return -1;
     }
-    fseek(file, index-1+length, SEEK_SET);
+    fseek(stdin, index-1+length, SEEK_SET);
     return index-1;
+    //return 0;
 }
 
-move scan_move(FILE *file, int start) {
+move scan_moves(int start) {
     move head = malloc(sizeof(struct move_node));
     head->length = 0;
     head->point = NULL;
@@ -245,19 +242,19 @@ move scan_move(FILE *file, int start) {
     move current = head;
 
     int index = start;
-    char ch = fgetc(file);
+    char ch = fgetc(stdin);
     while (ch != EOF) {
-        if ((index = search_word("->", file, index-1)) == -1) break;
+        if ((index = search_word("->")) == -1) break;
         int count = 0;
         char letter;
         int number;
-        ch = fgetc(file);
+        ch = fgetc(stdin);
         point currentpt = malloc(sizeof(struct point_node));
         current->point = currentpt;
         for (int i = 0; ch != ' ' && ch != EOF && ch != '\n' && ch != '\t'; index+=4) {
-            fseek(file, index-2+i, SEEK_SET);
-            fscanf(file, "%c%d", &letter, &number);
-            ch = fgetc(file);
+            fseek(stdin, index-2+i, SEEK_SET);
+            fscanf(stdin, "%c%d", &letter, &number);
+            ch = fgetc(stdin);
             count++;
             currentpt->r = number;
             currentpt->c = letter - 'a';
@@ -278,15 +275,27 @@ move scan_move(FILE *file, int start) {
 void print_array(int rows, int cols, char array[rows][cols]) {
     for (int r = 0; r < rows; r++) {
         for (int c = 0; c < cols; c++) {
-            printf(" %c ", array[r][c]);
+            fprintf(stdout, " %c ", array[r][c]);
             if (c < cols - 1) {
-                printf("|");
+                fprintf(stdout, "|");
             }
         }
         if (r < rows - 1) {
-            printf("\n---+---+---+---+---+---+---+---\n");
+            fprintf(stdout, "\n---+---+---+---+---+---+---+---\n");
         }
     }
+    fprintf(stdout, "\n");
+}
+
+int getLineNumber() {
+    int start_index = ftell(stdin);
+    fseek(stdin, 0, SEEK_SET);
+    int count = 0;
+    int i;
+    for (i = 0; ftell(stdin) <= start_index; i++) {
+        if (fgetc(stdin) == '\n') count++;
+    }
+    return count;
 }
 
 /* OUTPUT
