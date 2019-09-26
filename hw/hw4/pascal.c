@@ -13,25 +13,23 @@ void destroy_Pascal(unsigned long** P, unsigned N);
  */
 
 int main() {
-    unsigned n = 50;
+    unsigned n = 25;
     unsigned long** triangle = build_Pascal(n);
-    show_Pascal(triangle, 10);
+    show_Pascal(triangle, n);
     destroy_Pascal(triangle, n);
 }
 
 // function to build the first N rows of Pascal's triangle, where N is given as a parameter.
 unsigned long** build_Pascal(unsigned N) {
     unsigned long** out = malloc(N * sizeof(unsigned long*));
-    unsigned i;
+    unsigned i, j;
     for (i = 0; i < N; i++) {
         out[i] = malloc((i + 1) * sizeof(unsigned long));
-        unsigned j;
         for (j = 0; j <= i; j++) {
             if (j == 0 || j == i || i < 1) out[i][j] = 1;
             else out[i][j] = out[i-1][j-1] + out[i-1][j];
         }
     }
-
     return out;
 }
 
@@ -53,10 +51,8 @@ void show_Pascal(unsigned long** P, unsigned N) {
 
 // function to destroy (free the allocated memory for) the first N rows of Pascal's triangle
 void destroy_Pascal(unsigned long** P, unsigned N) {
-    unsigned i;
-    for (i = 0; i < N; i++) {
-        free(P[i]);
-    }
+    unsigned i = 0;
+    while (i < N) free(P[i++]);
     free(P);
     *P = NULL;
 }
