@@ -13,7 +13,9 @@ void destroy_Pascal(unsigned long** P, unsigned N);
  */
 
 int main() {
-    unsigned n = 25;
+    unsigned n = 0;
+    fprintf(stdout, "Enter a size N for Pascal's triangle: \n");
+    fscanf(stdin, "%d", &n);
     unsigned long** triangle = build_Pascal(n);
     show_Pascal(triangle, n);
     destroy_Pascal(triangle, n);
