@@ -1,4 +1,0 @@
-RULES:no capture multiple jumps TURN:red BOARD:"b"b"b"bb"b"b"b""b"b"b
-"b."."."."".".".".r"r"r"r""r"r"r"rr"r"r"r"
-MOVES:a1->b2->c3->d4 f2->e3
-        x1->z9
