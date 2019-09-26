@@ -3,6 +3,7 @@ project(cs327)
 
 set(CMAKE_CXX_STANDARD 14)
 
-add_executable(Homeworks HW/hw3/fib.c)
-add_executable(Projects Projects/Part1/Part1.c)
+add_executable(Homework3 HW/hw3/fib.c)
+add_executable(Homework4 HW/hw4/pascal.c)
+add_executable(Project1 Projects/Part1/Part1.c)
 add_executable(Testing Testing.c)
