@@ -6,19 +6,17 @@
 #include <string.h>
 
 // move and point structures to likely be used in later later parts
-struct point_node {
+typedef struct point_node {
     int c;
     int r;
     struct point_node* next;
-};
-typedef struct point_node* point;
+} *point;
 
-struct move_node {
+typedef struct move_node {
     int length;
     point point;
     struct move_node* next;
-};
-typedef struct move_node* move;
+} *move;
 
 void error(char *key);
 void skip_whitespace();
@@ -61,7 +59,7 @@ int main() {
             p++;
             if (head->point->c > 8 || head->point->c <= 0 || head->point->r > 8 || head->point->r <= 0)
                 fprintf(stderr, "ERROR near line %d: move %d at jump %d is out of bounds/invalid\n", line_num, m, p);
-            //printf("%d: %d, %d\n", head->length, head->point->r, head->point->c);
+            printf("%d: %d, %d\n", head->length, head->point->r, head->point->c);
             head->point = head->point->next;
         }
         head = head->next;
@@ -121,13 +119,13 @@ int search2(char *word0, char* word1, int *word) {
 
 // scan the board into the array and check for board red/black errors along the way
 int scan_board(int rows, int cols, char array[rows][cols]) {
-    int row = 0, col = 0;
+    int row = 0, col = 0, scans = 1;
     char c;
     skip_whitespace(); // skip whitespace to start
     if (fscanf(stdin, "%c", &c) != 1) return -1; // return -1 if not reading more input
     int black_square = (c == '\"'); // check if top left corner is black or red for FLIPPED board
-    for (row = 0; row < rows && c != EOF; row++, black_square = !black_square) {  // invert black_square each loop
-        for (col = 0; col < cols && c != EOF;) {
+    for (row = 0; row < rows && c != EOF && scans == 1; row++, black_square = !black_square) {  // invert black_square each loop
+        for (col = 0; col < cols && c != EOF && scans == 1;) {
             if (c == '\n') line_num++;
             if (c == '\"' || c == 'b' || c == 'B' || c == 'r' || c == 'R'|| c == '.') {
                 array[row][col++] = c; // put value into array
@@ -135,7 +133,7 @@ int scan_board(int rows, int cols, char array[rows][cols]) {
                     if (c != '\"') return 1; // exit if fault in pattern
                 } else if (c != 'r' && c != 'R' && c != 'b' && c != 'B' && c != '.') return 1; // exit if pattern fault
             }
-            if (fscanf(stdin, "%c", &c) != 1) return -1; // return -1 if not reading more input
+            if ((scans = fscanf(stdin, "%c", &c)) != 1) return -1; // return -1 if not reading more input
             if (c != '\"' && c != 'b' && c != 'B' && c != 'r' && c != 'R'&& c != '.'
                 && c != ' ' && c != '\n' && c != '+' && c != '|' && c != '-') return 2; // exit if invalid character
         }
