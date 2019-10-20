@@ -3,8 +3,9 @@
 //
 #import <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
-struct data1 {
+/*struct data1 {
     int number;
     struct data1* next;
 };
@@ -52,4 +53,27 @@ int main() {
         }
         head = head->next;
     }
+}*/
+
+char* combine(char* str1, char* str2) {
+    int len1 = strlen(str1);
+    int len2 = strlen(str2);
+    int size = len1 < len2 ? len1 : len2;
+    size*=2;
+    while (!(size%2)) size--;
+    char* out = malloc((size+1) * sizeof(char));
+    for (int i = 0; i < size; i++) {
+        if (!(i % 2)) {
+            out[i] = *(str1++);
+        } else {
+            out[i] = *(str2++);
+        }
+    }
+    out[size] = 0;
+    return out;
+}
+
+int main () {
+    char* out = combine("HloWrd", "el ol!");
+    printf("%s", out);
 }
