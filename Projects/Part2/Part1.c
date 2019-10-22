@@ -55,7 +55,7 @@ void scan_input() {
     if (!(search("MOVES:"))) error("MOVES:");
 
     moves = scan_moves();
-    move current = moves;
+    /*move current = moves;
     int m = 0, p = 0;
     while (current->next != NULL) {
         m++;
@@ -67,7 +67,7 @@ void scan_input() {
             current->point = current->point->next;
         }
         current = current->next;
-    }
+    }*/
 
     array_count(ROWS, COLS, board, &red_kings, &red_pawns, &black_kings, &black_pawns); // count the numbers on board
     fprintf(stdout, "VALID INPUT\n"); // print standard required output
@@ -188,6 +188,8 @@ move scan_moves() {
         char letter;
         int number;
         point currentpt = malloc(sizeof(struct point_node));
+        currentpt->r = currentpt->c = -1;
+        currentpt->next = NULL;
         current->point = currentpt;
 
         skip_whitespace();
@@ -196,6 +198,8 @@ move scan_moves() {
             currentpt->r = number;
             currentpt->c = letter - 'a';
             point nextpt = malloc(sizeof(struct point_node));
+            nextpt->r = nextpt->c = -1;
+            nextpt->next = NULL;
             currentpt->next = nextpt;
             currentpt = currentpt->next;
             if ((c != '-') || (scans2 = fscanf(stdin, "%c", &c)) != 1) break;
