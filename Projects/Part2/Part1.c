@@ -55,19 +55,19 @@ void scan_input() {
     if (!(search("MOVES:"))) error("MOVES:");
 
     moves = scan_moves();
-    /*move current = moves;
-    int m = 0, p = 0;
-    while (current->next != NULL) {
-        m++;
-        while (current->point->next != NULL) {
-            p++;
-            if (current->point->c > 8 || current->point->c <= 0 || current->point->r > 8 || current->point->r <= 0)
+    move current = moves;
+    point currPoint;
+    int m, p;
+    for (m = 0; current->next != NULL; m++) {
+        currPoint = current->point;
+        for (p = 0; currPoint->next != NULL; p++) {
+            if (currPoint->c > 8 || currPoint->c <= 0 || currPoint->r > 8 || currPoint->r <= 0)
                 fprintf(stderr, "ERROR near line %d: move %d at jump %d is out of bounds/invalid\n", line_num, m, p);
-            printf("%d: %d, %d\n", current->length, current->point->r, current->point->c);
-            current->point = current->point->next;
+            //printf("%d: %d, %d\n", current->length, currPoint->r, currPoint->c);
+            currPoint = currPoint->next;
         }
         current = current->next;
-    }*/
+    }
 
     array_count(ROWS, COLS, board, &red_kings, &red_pawns, &black_kings, &black_pawns); // count the numbers on board
     fprintf(stdout, "VALID INPUT\n"); // print standard required output
@@ -205,7 +205,6 @@ move scan_moves() {
             if ((c != '-') || (scans2 = fscanf(stdin, "%c", &c)) != 1) break;
             if (c != '>') return NULL;
         }
-        currentpt->next = NULL;
         current->length = count;
         move next = malloc(sizeof(struct move_node));
         current->next = next;

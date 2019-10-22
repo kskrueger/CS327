@@ -15,27 +15,6 @@ int main(int argc, char* argv[]) {
     read_args(argc, argv);
     scan_input();
 
-    printf("Point %d, %d\n", moves->point->r, moves->point->c);
-
-    move* backup = &moves;
-    move current = moves;
-
-    int m = 0, p = 0;
-    while (current->next != NULL) {
-        m++;
-        while (current->point->next != NULL) {
-            p++;
-            if (current->point->c > 8 || current->point->c <= 0 || current->point->r > 8 || current->point->r <= 0)
-                fprintf(stderr, "ERROR near line %d: move %d at jump %d is out of bounds/invalid\n", line_num, m, p);
-            printf("%d: %d, %d\n", current->length, current->point->r, current->point->c);
-            current->point = current->point->next;
-        }
-        current = current->next;
-    }
-
-    move move1 = *backup;
-    printf("Point %d, %d\n", move1->point->r, move1->point->c);
-
     for (int i = 0; i < argc; i++) {
         if (!strcmp(argv[i], "-e")) {
 
