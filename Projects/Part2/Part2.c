@@ -11,9 +11,10 @@ int main(int argc, char* argv[]) {
 
     fprintf(stdout, "Input file has %d moves\n", count_of_moves);
     fprintf(stdout, "Processing %d moves\n", n_moves);
+    //print_board_full(stdout, ROWS, COLS, board);
     make_moves();
 
-    if (!illegal_moves) fprintf(stdout, "All moves are legal\n");
+    if (!illegal_move) fprintf(stdout, "All moves are legal\n");
 
     for (int i = 0; i < argc; i++) {
         if (!strcmp(argv[i], "-e")) {
@@ -31,7 +32,7 @@ int main(int argc, char* argv[]) {
             fprintf(file, " MOVES: ");
             move curr = moves;
             int j;
-            for (j = 0; j < n_moves; j++) curr = curr->next;
+            for (j = 0; j < n_moves-illegal_move; j++) curr = curr->next;
             while (curr->next->next != NULL) {
                 point currPoint = curr->point;
                 while (currPoint->next != NULL) {
@@ -51,7 +52,7 @@ int main(int argc, char* argv[]) {
             fprintf(file, "\n");
             move curr = moves;
             int j;
-            for (j = 0; j < n_moves; j++) curr = curr->next;
+            for (j = 0; j < n_moves-illegal_move; j++) curr = curr->next;
             while (curr->next->next != NULL) {
                 point currPoint = curr->point;
                 while (currPoint->next != NULL) {

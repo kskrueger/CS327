@@ -46,7 +46,7 @@ void make_moves();
 int n_moves = -1;
 char *filename = NULL;
 int moves_made = 0;
-int illegal_moves = 0;
+int illegal_move = 0;
 
 char board[8][8]; // initialize the board array
 int red_kings = 0, red_pawns = 0, black_kings = 0, black_pawns = 0; // initialize variables
@@ -60,7 +60,7 @@ void scan_input() {
     if (!(search2("no capture", "capture", &capture_on))) error("capture' or 'no capture");
     if (!(search2("single jumps", "multiple jumps", &multiple_jumps_on))) error("multiple jumps' or 'single jumps");
     if (!(search("TURN:"))) error("TURN:");
-    if (!(search2("red", "black", &turn_red))) error("red' or 'black");
+    if (!(search2("black", "red", &turn_red))) error("red' or 'black");
     if (!(search("BOARD:"))) error("BOARD:");
     if ((errorOut = scan_board(8, 8, board))) {
         if (errorOut == -1) fprintf(stderr, "ERROR near line %d: unexpected end of file", line_num);
@@ -291,18 +291,19 @@ void make_moves() {
             if (!multiple_jumps_on && (current->length > 2 || p > 1)) {
                 fprintf(stderr, "ERROR: Multiple jumps attempted while off\n");
                 fprintf(stdout, "Move %d is illegal: %c%d->%c%d\n", moves_made+1, c+'a', r, jump_c+'a', jump_r);
-                illegal_moves++;
+                illegal_move = moves_made + 1;
             }
             if ((c+r)%2) {
-                //fprintf(stdout, "Move %d: %c%d->%c%d\n", moves_made+1, c+'a', r, jump_c+'a', jump_r);
+                //fprintf(stdout, "Move %d: %c%d->%c%d, Turn: %s\n", moves_made+1, c+'a', r, jump_c+'a', jump_r, turn_red?"red":"black");
                 move_piece(r, c, jump_r, jump_c);
+                //print_board_full(stdout, ROWS, COLS, board);
             } else {
                 fprintf(stderr, "ERROR: Move %d on RED square at %d,%d\n", moves_made+1, c, r);
                 fprintf(stdout, "Move %d is illegal: %c%d->%c%d\n", moves_made+1, c+'a', r, jump_c+'a', jump_r);
-                illegal_moves++;
+                illegal_move = moves_made + 1;
             }
             currPoint = currPoint->next;
-            if (++moves_made >= n_moves) return;
+            if (moves_made >= n_moves) return;
         }
         current = current->next;
     }
@@ -319,28 +320,64 @@ void change_piece(int r, int c, char v) {
 void move_piece(int start_r, int start_c, int end_r, int end_c) {
     char start_piece = get_piece(start_r, start_c);
     char end_piece = get_piece(end_r, end_c);
-    if (end_piece != '.') {
+    int curr_red = -1;
+    if (start_piece == 'r' || start_piece == 'R') {
+        curr_red = 1;
+    } else if (start_piece == 'b' || start_piece == 'B') {
+        curr_red = 0;
+    }
+    if (curr_red != turn_red) {
+        fprintf(stderr, "ERROR, at move %d: Move out of turn\n", moves_made + 1);
+        fprintf(stdout, "Move %d is illegal: %c%d->%c%d\n", moves_made + 1, start_c + 'a', start_r, end_c + 'a', end_r);
+        illegal_move = moves_made + 1;
+        return;
+    } else if (!((end_c + end_r) % 2)) {
+        fprintf(stderr, "ERROR, at move %d: Cannot move to RED square\n", moves_made+1);
+        fprintf(stdout, "Move %d is illegal: %c%d->%c%d\n", moves_made+1, start_c+'a', start_r, end_c+'a', end_r);
+        illegal_move = moves_made + 1;
+        return;
+    } else if (end_piece != '.') {
         fprintf(stderr, "ERROR, at move %d: Cannot move to non-empty square\n", moves_made+1);
         fprintf(stdout, "Move %d is illegal: %c%d->%c%d\n", moves_made+1, start_c+'a', start_r, end_c+'a', end_r);
-        illegal_moves++;
-    } else if (start_piece == 'r' && (end_r-start_r) < 0) {
+        illegal_move = moves_made + 1;
+        return;
+    } else if (start_piece == 'r' && (end_r-start_r) <= 0) {
         fprintf(stderr, "ERROR, at move %d: Pawn cannot move backwards\n", moves_made+1);
         fprintf(stdout, "Move %d is illegal: %c%d->%c%d\n", moves_made+1, start_c+'a', start_r, end_c+'a', end_r);
-        illegal_moves++;
-    } else if (start_piece == 'b' && (end_r-start_r) > 0) {
-        fprintf(stderr, "ERROR, at move %d: Pawn cannot move backwards\n", moves_made+1);
+        illegal_move = moves_made + 1;
+        return;
+    } else if (start_piece == 'b' && (end_r - start_r) >= 0) {
+        fprintf(stderr, "ERROR, at move %d: Pawn can only move forward\n", moves_made+1);
         fprintf(stdout, "Move %d is illegal: %c%d->%c%d\n", moves_made+1, start_c+'a', start_r, end_c+'a', end_r);
-        illegal_moves++;
+        illegal_move = moves_made + 1;
+        return;
+    } else if (abs(end_r - start_r) != abs(end_c - start_c)) {
+        fprintf(stderr, "ERROR, at move %d: Can only move at diagonal\n", moves_made+1);
+        fprintf(stdout, "Move %d is illegal: %c%d->%c%d\n", moves_made+1, start_c+'a', start_r, end_c+'a', end_r);
+        illegal_move = moves_made + 1;
+        return;
     } else if (start_piece == '.') {
         fprintf(stderr, "ERROR, at move %d: Not a valid piece at start\n", moves_made + 1);
         fprintf(stdout, "Move %d is illegal: %c%d->%c%d\n", moves_made + 1, start_c + 'a', start_r, end_c + 'a', end_r);
-        illegal_moves++;
+        illegal_move = moves_made + 1;
+        return;
+    } else if (abs(start_r-end_r) == 2 && abs(start_c-end_c) == 2) {
+        int captured_r = (start_r+end_r)/2;
+        int captured_c = (start_c+end_c)/2;
+        char jumped_piece = get_piece(captured_r, captured_c);
+        if ((curr_red && (jumped_piece == 'b' || jumped_piece == 'B')) || (!curr_red  && (jumped_piece == 'r' || jumped_piece == 'R'))) {
+            change_piece(captured_r, captured_c, '.');
+        } else {
+            fprintf(stderr, "ERROR, at move %d: Cannot jump over that scquare\n", moves_made + 1);
+            fprintf(stdout, "Move %d is illegal: %c%d->%c%d\n", moves_made + 1, start_c + 'a', start_r, end_c + 'a', end_r);
+            illegal_move = moves_made + 1;
+            return;
+        }
     }
     change_piece(end_r, end_c, start_piece);
     change_piece(start_r, start_c, '.');
     if (get_piece(end_r, end_c) == 'r' && end_r == 8) change_piece(end_r, end_c, 'R');
     if (get_piece(end_r, end_c) == 'b' && end_r == 1) change_piece(end_r, end_c, 'B');
-    if (abs(start_r-end_r) == 2 && abs(start_c-end_c) == 2) {
-        change_piece((start_r+end_r)/2, (start_c+end_c)/2, '.');
-    }
+    turn_red = !turn_red;
+    moves_made++;
 }
