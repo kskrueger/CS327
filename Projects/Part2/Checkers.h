@@ -283,7 +283,7 @@ void make_moves() {
     int m, p;
     for (m = 0; current->next->next != NULL; m++) {
         point currPoint = current->point;
-        for (p = 0; currPoint->next->next != NULL; p++) {
+        for (p = 0; currPoint->next->next != NULL && moves_made < n_moves; p++) {
             int r = currPoint->r;
             int c = currPoint->c;
             int jump_r = currPoint->next->r;
@@ -303,7 +303,6 @@ void make_moves() {
                 illegal_move = moves_made + 1;
             }
             currPoint = currPoint->next;
-            if (moves_made >= n_moves) return;
         }
         current = current->next;
     }
