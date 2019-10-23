@@ -32,7 +32,8 @@ int main(int argc, char* argv[]) {
             fprintf(file, " MOVES: ");
             move curr = moves;
             int j;
-            for (j = 0; j < n_moves-illegal_move; j++) curr = curr->next;
+            if (illegal_move == 0) illegal_move = n_moves+1;
+            for (j = 0; j < illegal_move-1; j++) curr = curr->next;
             while (curr->next->next != NULL) {
                 point currPoint = curr->point;
                 while (currPoint->next != NULL) {
@@ -52,7 +53,8 @@ int main(int argc, char* argv[]) {
             fprintf(file, "\n");
             move curr = moves;
             int j;
-            for (j = 0; j < n_moves-illegal_move; j++) curr = curr->next;
+            if (illegal_move == 0) illegal_move = n_moves+1;
+            for (j = 0; j < illegal_move-1; j++) curr = curr->next;
             while (curr->next->next != NULL) {
                 point currPoint = curr->point;
                 while (currPoint->next != NULL) {
