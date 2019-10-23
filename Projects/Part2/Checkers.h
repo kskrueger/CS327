@@ -51,6 +51,7 @@ int illegal_move = 0;
 char board[8][8]; // initialize the board array
 int red_kings = 0, red_pawns = 0, black_kings = 0, black_pawns = 0; // initialize variables
 int capture_on = -1, multiple_jumps_on = -1, turn_red = -1, errorOut = 0;
+int board_flipped = 0;
 
 move moves;
 
@@ -76,7 +77,7 @@ void scan_input() {
     for (m = 0; current->next != NULL; m++) {
         point currPoint = current->point;
         for (p = 0; currPoint->next != NULL; p++) {
-            if (currPoint->c > 8 || currPoint->c <= 0 || currPoint->r > 8 || currPoint->r <= 0) {
+            if (currPoint->c >= 8 || currPoint->c < 0 || currPoint->r > 8 || currPoint->r <= 0) {
                 fprintf(stderr, "ERROR near line %d: move %d at jump %d is out of bounds/invalid\n", line_num, m, p);
                 exit(1);
             }
@@ -98,7 +99,8 @@ void error(char *key) {
 void skip_whitespace() {
     char c;
     int comment = 0;
-    while (fscanf(stdin, "%c", &c) == 1 && c!= EOF && (c == ' ' || c == '\t' || c == '\n' || c == '\r' || c == '#' || comment)) {
+    while (fscanf(stdin, "%c", &c) == 1 && c!= EOF && (c == ' ' || c == '\t' || c == '\n' || c == '\r'
+    || c == '#' || c == '-' || c == '+' || c == '|' || comment)) {
         if (c == '\n') line_num++; // increment line number
         if (comment) comment = (c != '\n'); // look for end of comment
         else comment = (c == '#'); // look for start of comment
@@ -139,6 +141,7 @@ int scan_board(int rows, int cols, char array[rows][cols]) {
     skip_whitespace(); // skip whitespace to start
     if (fscanf(stdin, "%c", &c) != 1) return -1; // return -1 if not reading more input
     int black_square = (c == '\"'); // check if top left corner is black or red for FLIPPED board
+    board_flipped = 1;
     for (row = 0; row < rows && c != EOF && scans == 1; row++, black_square = !black_square) {  // invert black_square each loop
         skip_whitespace();
         for (col = 0; col < cols && c != EOF && scans == 1;) {
@@ -293,7 +296,7 @@ void make_moves() {
                 fprintf(stdout, "Move %d is illegal: %c%d->%c%d\n", moves_made+1, c+'a', r, jump_c+'a', jump_r);
                 illegal_move = moves_made + 1;
             }
-            if ((c+r)%2) {
+            if (((c+r)%2) == board_flipped) {
                 //fprintf(stdout, "Move %d: %c%d->%c%d, Turn: %s\n", moves_made+1, c+'a', r, jump_c+'a', jump_r, turn_red?"red":"black");
                 move_piece(r, c, jump_r, jump_c);
                 //print_board_full(stdout, ROWS, COLS, board);
@@ -330,7 +333,7 @@ void move_piece(int start_r, int start_c, int end_r, int end_c) {
         fprintf(stdout, "Move %d is illegal: %c%d->%c%d\n", moves_made + 1, start_c + 'a', start_r, end_c + 'a', end_r);
         illegal_move = moves_made + 1;
         return;
-    } else if (!((end_c + end_r) % 2)) {
+    } else if (((end_c + end_r) % 2) != board_flipped) {
         fprintf(stderr, "ERROR, at move %d: Cannot move to RED square\n", moves_made+1);
         fprintf(stdout, "Move %d is illegal: %c%d->%c%d\n", moves_made+1, start_c+'a', start_r, end_c+'a', end_r);
         illegal_move = moves_made + 1;
@@ -355,6 +358,11 @@ void move_piece(int start_r, int start_c, int end_r, int end_c) {
         fprintf(stdout, "Move %d is illegal: %c%d->%c%d\n", moves_made+1, start_c+'a', start_r, end_c+'a', end_r);
         illegal_move = moves_made + 1;
         return;
+    } else if ((abs(end_r - start_r) > 2) || (abs(end_c - start_c) > 2)) {
+        fprintf(stderr, "ERROR, at move %d: Cannot move that far\n", moves_made+1);
+        fprintf(stdout, "Move %d is illegal: %c%d->%c%d\n", moves_made+1, start_c+'a', start_r, end_c+'a', end_r);
+        illegal_move = moves_made + 1;
+        return;
     } else if (start_piece == '.') {
         fprintf(stderr, "ERROR, at move %d: Not a valid piece at start\n", moves_made + 1);
         fprintf(stdout, "Move %d is illegal: %c%d->%c%d\n", moves_made + 1, start_c + 'a', start_r, end_c + 'a', end_r);
@@ -367,7 +375,7 @@ void move_piece(int start_r, int start_c, int end_r, int end_c) {
         if ((curr_red && (jumped_piece == 'b' || jumped_piece == 'B')) || (!curr_red  && (jumped_piece == 'r' || jumped_piece == 'R'))) {
             change_piece(captured_r, captured_c, '.');
         } else {
-            fprintf(stderr, "ERROR, at move %d: Cannot jump over that scquare\n", moves_made + 1);
+            fprintf(stderr, "ERROR, at move %d: Cannot jump over that square\n", moves_made + 1);
             fprintf(stdout, "Move %d is illegal: %c%d->%c%d\n", moves_made + 1, start_c + 'a', start_r, end_c + 'a', end_r);
             illegal_move = moves_made + 1;
             return;
