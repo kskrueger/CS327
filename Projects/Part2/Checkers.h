@@ -60,7 +60,7 @@ void scan_input() {
     if (!(search2("no capture", "capture", &capture_on))) error("capture' or 'no capture");
     if (!(search2("single jumps", "multiple jumps", &multiple_jumps_on))) error("multiple jumps' or 'single jumps");
     if (!(search("TURN:"))) error("TURN:");
-    if (!(search2("black", "red", &turn_red))) error("red' or 'black");
+    if (!(search2("red", "black", &turn_red))) error("red' or 'black");
     if (!(search("BOARD:"))) error("BOARD:");
     if ((errorOut = scan_board(8, 8, board))) {
         if (errorOut == -1) fprintf(stderr, "ERROR near line %d: unexpected end of file", line_num);

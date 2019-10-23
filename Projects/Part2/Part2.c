@@ -19,7 +19,6 @@ int main(int argc, char* argv[]) {
         if (!strcmp(argv[i], "-e")) {
             FILE* file = fopen(argv[++i], "w");
 
-            // RULES: no capture single jumps TURN: red BOARD: "b"b".".b"b"b".""."."."b."b".".""."."r"Rr"r"."r""."."r"rr"r"r"r"
             fprintf(file, "RULES: %s capture %s jumps ", capture_on ? "" : "no", multiple_jumps_on ? "multiple" : "single");
             fprintf(file, "TURN: %s ", turn_red ? "red" : "black");
             fprintf(file, "BOARD: ");
@@ -71,4 +70,3 @@ int main(int argc, char* argv[]) {
 
     return 0;
 }
-
