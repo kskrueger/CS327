@@ -63,18 +63,18 @@ void scan_input() {
         for (p = 0; currPoint->next != NULL; p++) {
             if (currPoint->c > 8 || currPoint->c <= 0 || currPoint->r > 8 || currPoint->r <= 0)
                 fprintf(stderr, "ERROR near line %d: move %d at jump %d is out of bounds/invalid\n", line_num, m, p);
-            printf("%d: %d, %d\n", current->length, currPoint->r, currPoint->c);
+            // printf("%d: %d, %d\n", current->length, currPoint->r, currPoint->c);
             currPoint = currPoint->next;
         }
         current = current->next;
     }
 
     array_count(ROWS, COLS, board, &red_kings, &red_pawns, &black_kings, &black_pawns); // count the numbers on board
-    fprintf(stdout, "VALID INPUT\n"); // print standard required output
+    /*fprintf(stdout, "VALID INPUT\n"); // print standard required output
     fprintf(stdout, "Initial configuration:\n");
     fprintf(stdout, "Turn: %s\n", turn_red ? "red" : "black");
     fprintf(stdout, "Red: %d kings, %d pawns\n", red_kings, red_pawns);
-    fprintf(stdout, "Black: %d kings, %d pawns\n", black_kings, black_pawns);
+    fprintf(stdout, "Black: %d kings, %d pawns\n", black_kings, black_pawns);*/
 }
 
 // print an error message to template
