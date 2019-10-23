@@ -23,7 +23,7 @@ void skip_whitespace();
 int search(char *word);
 int search2(char *word0, char* word1, int* out);
 int scan_board(int rows, int cols, char array[rows][cols]);
-void print_array(int rows, int cols, char array[rows][cols]);
+void print_board(int rows, int cols, char array[rows][cols]);
 void array_count(int rows, int cols, char array[rows][cols],
                  int* red_kings, int* red_pawns, int* black_kings, int* black_pawns);
 move scan_moves();
@@ -63,7 +63,7 @@ void scan_input() {
         for (p = 0; currPoint->next != NULL; p++) {
             if (currPoint->c > 8 || currPoint->c <= 0 || currPoint->r > 8 || currPoint->r <= 0)
                 fprintf(stderr, "ERROR near line %d: move %d at jump %d is out of bounds/invalid\n", line_num, m, p);
-            //printf("%d: %d, %d\n", current->length, currPoint->r, currPoint->c);
+            printf("%d: %d, %d\n", current->length, currPoint->r, currPoint->c);
             currPoint = currPoint->next;
         }
         current = current->next;
@@ -129,6 +129,7 @@ int scan_board(int rows, int cols, char array[rows][cols]) {
     if (fscanf(stdin, "%c", &c) != 1) return -1; // return -1 if not reading more input
     int black_square = (c == '\"'); // check if top left corner is black or red for FLIPPED board
     for (row = 0; row < rows && c != EOF && scans == 1; row++, black_square = !black_square) {  // invert black_square each loop
+        skip_whitespace();
         for (col = 0; col < cols && c != EOF && scans == 1;) {
             if (c == '\n') line_num++;
             if (c == '\"' || c == 'b' || c == 'B' || c == 'r' || c == 'R'|| c == '.') {
@@ -160,7 +161,7 @@ void array_count(int rows, int cols, char array[rows][cols],
 }
 
 //  print the checkers board array (not required)
-void print_array(int rows, int cols, char array[rows][cols]) {
+void print_board(int rows, int cols, char array[rows][cols]) {
     int row = 0, col = 0;
     for (row = 0; row < rows; row++) {
         for (col = 0; col < cols; col++) {
