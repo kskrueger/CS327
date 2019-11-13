@@ -10,19 +10,20 @@ int main(int argc, char* argv[]) {
     int count_of_moves = count_moves();
     if (n_moves == -1 || n_moves > count_of_moves) n_moves = count_of_moves;
 
-    fprintf(stdout, "Input file has %d moves\n", count_of_moves);
-    fprintf(stdout, "Depth of %d moves\n", d_depth);
-    fprintf(stdout, "Processing %d moves\n", n_moves);
+    //fprintf(stdout, "Input file has %d moves\n", count_of_moves);
+    //fprintf(stdout, "Depth of %d moves\n", d_depth);
+    //fprintf(stdout, "Processing %d moves\n", n_moves);
     //print_board_full(stdout, ROWS, COLS, board);
     make_moves();
-    if (!illegal_move) fprintf(stdout, "All moves are legal\n");
+    //if (!illegal_move) fprintf(stdout, "All moves are legal\n");
 
-    print_board_full(stdout, ROWS, COLS, board);
+    //print_board_full(stdout, ROWS, COLS, board);
 
-    move b_moves = NULL;
-    find_moves(&b_moves);
+    //move b_moves = NULL;
+    //find_moves(&b_moves);
+    start_recurse(board, 1);
 
-    print_board_full(stdout, ROWS, COLS, board);
+    //print_board_full(stdout, ROWS, COLS, board);
     /*Scoring
      * #r = number of red pawns, #B = number of black kings
      * Score for red is the negative of the score for black
