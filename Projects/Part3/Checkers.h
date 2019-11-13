@@ -669,7 +669,8 @@ int recursive(char boardIn[8][8], int depth, int start_r, int start_c, int end_r
     copy_board(boardIn, myBoard);
     move_a(myBoard, start_r, start_c, end_r, end_c);
     int score1 = score(myBoard, turn);
-    fprintf(stdout, "%c%d->%c%d : score %d\n", start_c+'a', ROWS-start_r, end_c+'a', ROWS-end_r, score1);
+    for (int i = 0; i < depth; i++) fprintf(stdout, "\t");
+    fprintf(stdout, "%c%d->%c%d : score %s %d\n", start_c+'a', ROWS-start_r, end_c+'a', ROWS-end_r, turn ? "BLACK":"RED", score1);
     //print_board_full(stdout, 8, 8, myBoard);
 
     if (depth >= d_depth) return score(myBoard, turn);
@@ -679,22 +680,34 @@ int recursive(char boardIn[8][8], int depth, int start_r, int start_c, int end_r
     int scoreLeft = 0;
     int scoreRight = 0;
     for (int i = 0; points[i] != NULL; i++) {
+
+        int moves_count = 0;
         pointLoc p = points[i];
         // TODO support jumps
         // left
-        if (myBoard[p->r+y][p->c-1] == '.')
+        if (myBoard[p->r+y][p->c-1] == '.') {
             scoreLeft = recursive(myBoard, depth+1, p->r, p->c, p->r+y, p->c-1);
-        else if ((myBoard[p->r+2*y][p->c-2] == (turn ? 'b':'r')) || (myBoard[p->r+2*y][p->c-2] == turn ? 'B':'R'))
+            moves_count++;
+        } else if ((myBoard[p->r+2*y][p->c-2] == (turn ? 'b':'r')) || (myBoard[p->r+2*y][p->c-2] == turn ? 'B':'R')) {
             scoreLeft = recursive(myBoard, depth+1, p->r, p->c, p->r+2*y, p->c-2);
+            moves_count++;
+        }
         if (!count(myBoard, turn ? 'b':'r') && !count(myBoard, turn ? 'B':'R')) scoreLeft = 99;
+        if (!moves_count) scoreLeft = 99;
         // right
-        if (myBoard[p->r+y][p->c+1] == '.')
+        moves_count = 0;
+        if (myBoard[p->r+y][p->c+1] == '.') {
             scoreRight = recursive(myBoard, depth+1, p->r, p->c, p->r+y, p->c+1);
-        else if ((myBoard[p->r+2*y][p->c+2] == (turn ? 'b':'r')) || (myBoard[p->r+2*y][p->c+2] == (turn ? 'B':'R')))
+            moves_count++;
+        } else if ((myBoard[p->r+2*y][p->c+2] == (turn ? 'b':'r')) || (myBoard[p->r+2*y][p->c+2] == (turn ? 'B':'R'))) {
             scoreLeft = recursive(myBoard, depth+1, p->r, p->c, p->r+2*y, p->c+2);
+            moves_count++;
+        }
         if (!count(myBoard, turn ? 'b':'r') && !count(myBoard, turn ? 'B':'R')) scoreRight = 99;
+        if (!moves_count) scoreRight = 99;
+
     }
-    printf("SCORE %d\n", scoreLeft > scoreRight ? scoreLeft : scoreRight);
+    //printf("SCORE %s %d\n", turn ? "RED" :"BLACK", scoreLeft > scoreRight ? scoreLeft : scoreRight);
     return scoreLeft > scoreRight ? scoreLeft : scoreRight; // return max?
 }
 
