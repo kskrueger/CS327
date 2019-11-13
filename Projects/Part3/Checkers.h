@@ -676,17 +676,18 @@ int recursive(char boardIn[8][8], int depth, int start_r, int start_c, int end_r
         fprintf(stdout, ". %c%d->%c%d for %s: score %d\n", start_c+'a', ROWS-start_r, end_c+'a', ROWS-end_r, turn ? "black":"red", score1);
         return score(myBoard, turn);
     } else {
-        fprintf(stdout, "? %c%d->%c%d for %s: score %d\n", start_c+'a', ROWS-start_r, end_c+'a', ROWS-end_r, turn ? "black":"red", score1);
+        fprintf(stdout, "? %c%d->%c%d for %s:\n", start_c+'a', ROWS-start_r, end_c+'a', ROWS-end_r, turn ? "black":"red");
     }
     int y = turn ? -1 : 1;
     // list of p points
     pointLoc *points = getPoints(myBoard, turn);
     int scoreLeft = 0;
     int scoreRight = 0;
-    for (int i = 0; points[i] != NULL; i++) {
+    int j = 0;
+    for (j = 0; points[j] != NULL; j++) {
 
         int moves_count = 0;
-        pointLoc p = points[i];
+        pointLoc p = points[j];
         // TODO support jumps
         // left
         if (myBoard[p->r+y][p->c-1] == '.') {
@@ -704,14 +705,24 @@ int recursive(char boardIn[8][8], int depth, int start_r, int start_c, int end_r
             scoreRight = recursive(myBoard, depth+1, p->r, p->c, p->r+y, p->c+1, turn);
             moves_count++;
         } else if ((myBoard[p->r+2*y][p->c+2] == (turn ? 'b':'r')) || (myBoard[p->r+2*y][p->c+2] == (turn ? 'B':'R'))) {
-            scoreLeft = recursive(myBoard, depth+1, p->r, p->c, p->r+2*y, p->c+2, turn);
+            for (int i = 0; i < depth; i++) fprintf(stdout, "\t");
             moves_count++;
         }
         if (!count(myBoard, turn ? 'b':'r') && !count(myBoard, turn ? 'B':'R')) scoreRight = 99;
         if (!moves_count) scoreRight = 99;
 
+        for (int i = 0; i < depth; i++) fprintf(stdout, "\t");
+        if (scoreLeft > scoreRight) {
+            fprintf(stdout, ". %c%d->%c%d for %s: score %d\n", start_c+'a', ROWS-start_r, end_c+'a', ROWS-end_r, turn ? "black":"red", scoreLeft);
+        } else {
+            fprintf(stdout, ". %c%d->%c%d for %s: score %d\n", start_c+'a', ROWS-start_r, end_c+'a', ROWS-end_r, turn ? "black":"red", scoreRight);
+        }
     }
-    //printf("SCORE %s %d\n", turn ? "RED" :"BLACK", scoreLeft > scoreRight ? scoreLeft : scoreRight);
+    if (!j) {
+        for (int i = 0; i < depth; i++) fprintf(stdout, "\t");
+        fprintf(stdout, ". %c%d->%c%d for %s: score %d\n", start_c+'a', ROWS-start_r, end_c+'a', ROWS-end_r, turn ? "black":"red", scoreLeft);
+    }
+
     return scoreLeft > scoreRight ? scoreLeft : scoreRight; // return max?
 }
 
