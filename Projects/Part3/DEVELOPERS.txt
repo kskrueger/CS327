@@ -1,0 +1,51 @@
+The key data structures used in this program are structs for the move_node and point_node.
+The move_node is a linked list of the moves. It includes a length of the points list, pointer to the first point, and pointer to the first node.
+The point_node is a linked list of the points for each move. It includes row and col values, and a pointer to the next point in the list.
+Typedefs are also used for the structs above to make it easier. A typedef move* is used as a pointer to the struct move_node.
+A typedef point* is used as a pointer to the struct point_node.
+
+The board grid information is stored in a char array size ROW x COL as a variable named board.
+
+The structure of the files is a Checkers.h file that contains all the methods and variables. The Part1.c file imports the .h file
+and mainly just prints the outputs. The Part2.c file contains some loops to output data for the out files, and calls functions from the .h file.
+
+All code was developed by me, Karter Krueger, on my own.
+
+void error(char *key);
+Print an error message out to stderr and cleanly exit the program.
+
+void skip_whitespace();
+Skip whitespace, including tolerance for comment lines. When comment character is detected, search until newline.
+
+int search(char *word);
+Search for a word in the input.
+
+int search2(char *word0, char* word1, int* out);
+Search for word 0 or 1 inputted, and return a 0 or 1 for which it is.
+
+int scan_board(int rows, int cols, char array[rows][cols]);
+Scan the board in by searching for the order of expected characters and placing in board grid.
+
+void print_board(int rows, int cols, char array[rows][cols]);
+Print the board out. Mainly used for debugging.
+
+void array_count(int rows, int cols, char array[rows][cols], int* red_kings, int* red_pawns, int* black_kings, int* black_pawns);
+Count the values of each type and assign to respective variable pointers.
+
+move scan_moves();
+Scan in all moves and return reference to the head node.
+
+void read_args(int argc, char* argv[]);
+Scan through the args (used in Part2) and parse out the important variables.
+
+int count_moves();
+Loop through moves list and count up.
+
+void move_piece(int start_r, int start_c, int end_r, int end_c);
+Move/swap a piece with another location. Clear the old spot. Take care of captures. Check for errors.
+
+void print_board_full(FILE*, int rows, int cols, char array[rows][cols]);
+Fully print the board in the format required for human output mode.
+
+void make_moves();
+Execute all the moves. This calls the move_piece function.
