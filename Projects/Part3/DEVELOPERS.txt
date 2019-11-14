@@ -1,3 +1,9 @@
+Part 3:
+I make use of a recursive function to check all combination of the board moves.
+For each direction a piece can jump, a recursive function is called that then checks the directions of all colors of
+that piece. This is an effective divide and conquer approach that splits it up to check each direction and state.
+The score function is also called in each recursive call to return a score of the current game configuration.
+
 The key data structures used in this program are structs for the move_node and point_node.
 The move_node is a linked list of the moves. It includes a length of the points list, pointer to the first point, and pointer to the first node.
 The point_node is a linked list of the points for each move. It includes row and col values, and a pointer to the next point in the list.
