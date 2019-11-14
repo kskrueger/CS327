@@ -2,7 +2,7 @@
 all:
 	gcc -Wall -o info Part1.c
 	gcc -Wall -o change Part2.c
-	gcc -Wall -o rankmoves Part3.cpp
+	gcc -Wall -o rankmoves Part3.c
 
 clean:
 	$(RM) info change

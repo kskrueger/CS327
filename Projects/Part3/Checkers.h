@@ -504,7 +504,7 @@ void add_move_points(move * b_moves, int start_row, int start_col, int y, int x,
 
 void make_move(int start_r, int start_c, int end_r, int end_c) {
     char start_piece = get_piece(start_r, start_c);
-    char end_piece = get_piece(end_r, end_c);
+    //char end_piece = get_piece(end_r, end_c);
 
     if (abs(start_r-end_r) == 2 && abs(start_c-end_c) == 2) {
         int captured_r = (start_r+end_r)/2;
