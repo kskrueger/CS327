@@ -10,6 +10,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <ctype.h>
 
 // move and point structures to likely be used in later later parts
 typedef struct point_node {
@@ -653,9 +654,39 @@ pointLoc *getPoints(char myBoard[8][8], int turn) {
     return points;
 }
 
-int score(char myBoard[8][8], int turn) {
-    if (!count(myBoard, turn ? 'b':'r') && !count(myBoard, turn ? 'B':'R')) return 99;
-    return (turn ? 1 : -1) * ((count(myBoard,'r') + 2*count(myBoard, 'R')) - (count(myBoard, 'b') + 2*count(myBoard,'B')));
+int check_moves(char myBoard[8][8], char c) {
+    char low = tolower(c);
+    char high = toupper(c);
+    char jump = (low == 'r') ? 'b':'r';
+    int y = (low == 'r') ? -1 : 1;
+    int move_count = 0;
+    for (int i = 0; i < 8; i++) {
+        for (int j = 0; j < 8; j++) {
+            if (board[i][j] == low) {
+                if (board[i+y][j+1] == '.' || ((board[i+y][j+1] == jump || board[i+2*y][j+2] == toupper(jump)) && board[i+2*y][j+2] == '.')) move_count++;
+                if (board[i+y][j-1] == '.' || ((board[i+y][j-1] == jump || board[i+2*y][j-2] == toupper(jump)) && board[i+2*y][j-2] == '.')) move_count++;
+            }
+            if (board[i][j] == high) {
+                if (board[i+y][j+1] == '.' || ((board[i+y][j+1] == jump || board[i+2*y][j+2] == toupper(jump)) && board[i+2*y][j+2] == '.')) move_count++;
+                if (board[i+y][j-1] == '.' || ((board[i+y][j-1] == jump || board[i+2*y][j-2] == toupper(jump)) && board[i+2*y][j-2] == '.')) move_count++;
+                if (board[i-y][j+1] == '.' || ((board[i-y][j+1] == jump || board[i-2*y][j+2] == toupper(jump)) && board[i-2*y][j+2] == '.')) move_count++;
+                if (board[i-y][j-1] == '.' || ((board[i-y][j-1] == jump || board[i-2*y][j-2] == toupper(jump)) && board[i-2*y][j-2] == '.')) move_count++;
+            }
+        }
+    }
+    return move_count;
+}
+
+int score(char myBoard[8][8], int turn, int start_r, int start_c) {
+    if (turn) {
+        if (!check_moves(myBoard,'r')) return -99;
+        if (!check_moves(myBoard,'b')) return 99;
+        return ((count(myBoard,'r')+2*count(myBoard,'R')) - (count(myBoard,'b')+2*count(myBoard,'B')));
+    } else {
+        if (!check_moves(myBoard,'b')) return -99;
+        if (!check_moves(myBoard,'r')) return 99;
+        return ((count(myBoard,'b')+2*count(myBoard,'B')) - (count(myBoard,'r')+2*count(myBoard,'R')));
+    }
 }
 
 void copy_board(char boardIn[8][8], char boardOut[8][8]) {
@@ -669,12 +700,12 @@ int recursive(char boardIn[8][8], int depth, int start_r, int start_c, int end_r
     char myBoard[8][8];
     copy_board(boardIn, myBoard);
     move_a(myBoard, start_r, start_c, end_r, end_c);
-    int score1 = score(myBoard, turn);
+    int score1 = score(myBoard, turn, start_r, start_c);
     for (int i = 0; i < depth; i++) fprintf(stdout, "\t");
     //print_board_full(stdout, 8, 8, myBoard);
     if (depth >= d_depth) {
         fprintf(stdout, ". %c%d->%c%d for %s: score %d\n", start_c+'a', ROWS-start_r, end_c+'a', ROWS-end_r, turn ? "black":"red", score1);
-        return score(myBoard, turn);
+        return score(myBoard, turn, start_r, start_c);
     } else {
         fprintf(stdout, "? %c%d->%c%d for %s:\n", start_c+'a', ROWS-start_r, end_c+'a', ROWS-end_r, turn ? "black":"red");
     }
@@ -697,19 +728,15 @@ int recursive(char boardIn[8][8], int depth, int start_r, int start_c, int end_r
             scoreLeft = recursive(myBoard, depth+1, p->r, p->c, p->r+2*y, p->c-2, turn);
             moves_count++;
         }
-        if (!count(myBoard, turn ? 'b':'r') && !count(myBoard, turn ? 'B':'R')) scoreLeft = 99;
-        if (!moves_count) scoreLeft = 99;
         // right
         moves_count = 0;
         if (myBoard[p->r+y][p->c+1] == '.') {
             scoreRight = recursive(myBoard, depth+1, p->r, p->c, p->r+y, p->c+1, turn);
             moves_count++;
         } else if ((myBoard[p->r+2*y][p->c+2] == (turn ? 'b':'r')) || (myBoard[p->r+2*y][p->c+2] == (turn ? 'B':'R'))) {
-            for (int i = 0; i < depth; i++) fprintf(stdout, "\t");
+            scoreRight = recursive(myBoard, depth+1, p->r, p->c, p->r+2*y, p->c+2, turn);
             moves_count++;
         }
-        if (!count(myBoard, turn ? 'b':'r') && !count(myBoard, turn ? 'B':'R')) scoreRight = 99;
-        if (!moves_count) scoreRight = 99;
 
         for (int i = 0; i < depth; i++) fprintf(stdout, "\t");
         if (scoreLeft > scoreRight) {
@@ -723,7 +750,7 @@ int recursive(char boardIn[8][8], int depth, int start_r, int start_c, int end_r
         fprintf(stdout, ". %c%d->%c%d for %s: score %d\n", start_c+'a', ROWS-start_r, end_c+'a', ROWS-end_r, turn ? "black":"red", scoreLeft);
     }
 
-    return scoreLeft > scoreRight ? scoreLeft : scoreRight; // return max?
+    return score(myBoard, turn, start_r, start_c);//scoreLeft > scoreRight ? scoreLeft : scoreRight; // return max?
 }
 
 int start_recurse(char boardIn[8][8], int depth) {
@@ -746,8 +773,7 @@ int start_recurse(char boardIn[8][8], int depth) {
         if (myBoard[p->r+y][p->c-1] == '.') {
             scoreLeft = recursive(myBoard, 0, p->r, p->c, p->r+y, p->c-1, turn);
             moves_count++;
-        }
-        else if ((myBoard[p->r+2*y][p->c-2] == (turn ? 'b':'r')) || (myBoard[p->r+2*y][p->c-2] == turn ? 'B':'R')) {
+        } else if ((myBoard[p->r+2*y][p->c-2] == (turn ? 'b':'r')) || (myBoard[p->r+2*y][p->c-2] == turn ? 'B':'R')) {
             scoreLeft = recursive(myBoard, 0, p->r, p->c, p->r+2*y, p->c-2, turn);
             moves_count++;
         }
@@ -757,8 +783,7 @@ int start_recurse(char boardIn[8][8], int depth) {
         if (myBoard[p->r+y][p->c+1] == '.') {
             scoreRight = recursive(myBoard, 0, p->r, p->c, p->r+y, p->c+1, turn);
             moves_count++;
-        }
-        else if ((myBoard[p->r+2*y][p->c+2] == (turn ? 'b':'r')) || (myBoard[p->r+2*y][p->c+2] == (turn ? 'B':'R'))) {
+        } else if ((myBoard[p->r+2*y][p->c+2] == (turn ? 'b':'r')) || (myBoard[p->r+2*y][p->c+2] == (turn ? 'B':'R'))) {
             scoreLeft = recursive(myBoard, 0, p->r, p->c, p->r+2*y, p->c+2, turn);
             moves_count++;
         }
