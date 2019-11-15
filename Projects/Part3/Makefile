@@ -5,4 +5,4 @@ all:
 	gcc -Wall -o rankmoves Part3.c
 
 clean:
-	$(RM) info change
+	$(RM) info change rankmoves
