@@ -16,15 +16,13 @@
 typedef struct point_node {
     int c;
     int r;
-    struct point_node* next;
+    struct point_node *next;
 } *point;
 
 typedef struct move_node {
     int length;
     point point;
-    struct move_node* next;
-    int score;
-    int red_move;
+    struct move_node *next;
 } *move;
 
 const int COLS = 8;
@@ -32,18 +30,30 @@ const int ROWS = 8;
 int line_num = 1;
 
 void error(char *key);
+
 void skip_whitespace();
+
 int search(char *word);
-int search2(char *word0, char* word1, int* out);
+
+int search2(char *word0, char *word1, int *out);
+
 int scan_board(int rows, int cols, char array[rows][cols]);
+
 void print_board(int rows, int cols, char array[rows][cols]);
+
 void array_count(int rows, int cols, char array[rows][cols],
-                 int* red_kings, int* red_pawns, int* black_kings, int* black_pawns);
+                 int *red_kings, int *red_pawns, int *black_kings, int *black_pawns);
+
 move scan_moves();
-void read_args(int argc, char* argv[]);
+
+void read_args(int argc, char *argv[]);
+
 int count_moves();
+
 void move_piece(int start_r, int start_c, int end_r, int end_c);
-void print_board_full(FILE*, int rows, int cols, char array[rows][cols]);
+
+void print_board_full(FILE *, int rows, int cols, char array[rows][cols]);
+
 void make_moves();
 
 int n_moves = -1;
@@ -104,8 +114,8 @@ void error(char *key) {
 void skip_whitespace() {
     char c;
     int comment = 0;
-    while (fscanf(stdin, "%c", &c) == 1 && c!= EOF && (c == ' ' || c == '\t' || c == '\n' || c == '\r'
-    || c == '#' || c == '-' || c == '+' || c == '|' || comment)) {
+    while (fscanf(stdin, "%c", &c) == 1 && c != EOF && (c == ' ' || c == '\t' || c == '\n' || c == '\r'
+                                                        || c == '#' || c == '-' || c == '+' || c == '|' || comment)) {
         if (c == '\n') line_num++; // increment line number
         if (comment) comment = (c != '\n'); // look for end of comment
         else comment = (c == '#'); // look for start of comment
@@ -119,13 +129,13 @@ int search(char *word) {
     char c;
     int i = 0;
     // loop through to search for word and increment line number for each \n character
-    while (fscanf(stdin, "%c", &c) == 1 && c!= EOF && (c == word[i++])) if (c == '\n') line_num++;
+    while (fscanf(stdin, "%c", &c) == 1 && c != EOF && (c == word[i++])) if (c == '\n') line_num++;
     ungetc(c, stdin); // put the last char back so next function can use it
-    return i-1 == strlen(word); // return 1 if word was found
+    return i - 1 == strlen(word); // return 1 if word was found
 }
 
 // search for two words in the stdin input (words must start with different first char, which is fine for this)
-int search2(char *word0, char* word1, int *word) {
+int search2(char *word0, char *word1, int *word) {
     skip_whitespace(); // skip over whitespace and comments
     char c;
     // select word 0 or 1 based on if the first letter matches (good enough for this project)
@@ -133,10 +143,10 @@ int search2(char *word0, char* word1, int *word) {
     *word = (fscanf(stdin, "%c", &c) == 1 && c == word1[0]);
     ungetc(c, stdin);
     // loop through to search for word and increment line number for each \n character
-    while (!(*word) && fscanf(stdin, "%c", &c) == 1 && c!= EOF && (c == word0[i++])) if (c == '\n') line_num++;
-    while ((*word) && fscanf(stdin, "%c", &c) == 1 && c!= EOF && (c == word1[i++])) if (c == '\n') line_num++;
+    while (!(*word) && fscanf(stdin, "%c", &c) == 1 && c != EOF && (c == word0[i++])) if (c == '\n') line_num++;
+    while ((*word) && fscanf(stdin, "%c", &c) == 1 && c != EOF && (c == word1[i++])) if (c == '\n') line_num++;
     ungetc(c, stdin); // put the last char back so next function can use it
-    return (i-1 == (!(*word) ? strlen(word0):strlen(word1))); // return 1 or 2 if word was found
+    return (i - 1 == (!(*word) ? strlen(word0) : strlen(word1))); // return 1 or 2 if word was found
 }
 
 // scan the board into the array and check for board red/black errors along the way
@@ -147,19 +157,21 @@ int scan_board(int rows, int cols, char array[rows][cols]) {
     if (fscanf(stdin, "%c", &c) != 1) return -1; // return -1 if not reading more input
     int black_square = (c == '\"'); // check if top left corner is black or red for FLIPPED board
     board_flipped = 1;
-    for (row = 0; row < rows && c != EOF && scans == 1; row++, black_square = !black_square) {  // invert black_square each loop
+    for (row = 0;
+         row < rows && c != EOF && scans == 1; row++, black_square = !black_square) {  // invert black_square each loop
         skip_whitespace();
         for (col = 0; col < cols && c != EOF && scans == 1;) {
             if (c == '\n') line_num++;
-            if (c == '\"' || c == 'b' || c == 'B' || c == 'r' || c == 'R'|| c == '.') {
+            if (c == '\"' || c == 'b' || c == 'B' || c == 'r' || c == 'R' || c == '.') {
                 array[row][col++] = c; // put value into array
                 if (!(black_square = !black_square)) {
                     if (c != '\"') return 1; // exit if fault in pattern
                 } else if (c != 'r' && c != 'R' && c != 'b' && c != 'B' && c != '.') return 1; // exit if pattern fault
             }
             if ((scans = fscanf(stdin, "%c", &c)) != 1) return -1; // return -1 if not reading more input
-            if (c != '\"' && c != 'b' && c != 'B' && c != 'r' && c != 'R'&& c != '.'
-                && c != ' ' && c != '\n' && c != '+' && c != '|' && c != '-') return 2; // exit if invalid character
+            if (c != '\"' && c != 'b' && c != 'B' && c != 'r' && c != 'R' && c != '.'
+                && c != ' ' && c != '\n' && c != '+' && c != '|' && c != '-')
+                return 2; // exit if invalid character
         }
     }
     return 0; // return 0 for good if it reaches this point
@@ -167,7 +179,7 @@ int scan_board(int rows, int cols, char array[rows][cols]) {
 
 // count the pieces
 void array_count(int rows, int cols, char array[rows][cols],
-                 int* red_kings, int* red_pawns, int* black_kings, int* black_pawns) {
+                 int *red_kings, int *red_pawns, int *black_kings, int *black_pawns) {
     int r, c;
     for (r = 0; r < rows; r++) {
         for (c = 0; c < cols; c++) {
@@ -213,7 +225,7 @@ move scan_moves() {
         current->point = currentpt;
 
         skip_whitespace();
-        while((scans1 = fscanf(stdin, "%c%d%c", &letter, &number, &c)) == 3) {
+        while ((scans1 = fscanf(stdin, "%c%d%c", &letter, &number, &c)) == 3) {
             count++;
             currentpt->r = number;
             currentpt->c = letter - 'a';
@@ -234,7 +246,7 @@ move scan_moves() {
     return head;
 }
 
-void read_args(int argc, char* argv[]) {
+void read_args(int argc, char *argv[]) {
     /* loop through arguments
     *  for each "-e", check for e-filename after (doesn't start with '-')
     *  for each "-h", check for h-filename
@@ -261,7 +273,7 @@ void read_args(int argc, char* argv[]) {
             i++;
             fprintf(stderr, "Multiple '-m' commands, assuming first\n");
         } else if (filename == NULL && argv[i][0] != '-') {
-            filename = malloc(sizeof(char) * (strlen(argv[i])+1));
+            filename = malloc(sizeof(char) * (strlen(argv[i]) + 1));
             strcpy(filename, argv[i]);
         }
     }
@@ -281,17 +293,17 @@ int count_moves() {
 }
 
 //  print the checkers board array
-void print_board_full(FILE* file, int rows, int cols, char array[rows][cols]) {
+void print_board_full(FILE *file, int rows, int cols, char array[rows][cols]) {
     fprintf(file, "    a   b   c   d   e   f   g   h\n");
     fprintf(file, "  +---+---+---+---+---+---+---+---+\n");
     int row = 0, col = 0;
     for (row = 0; row < rows; row++) {
-        fprintf(file, "%d |", ROWS-row);
+        fprintf(file, "%d |", ROWS - row);
         for (col = 0; col < cols; col++) {
             fprintf(file, " %c ", array[row][col]);
             fprintf(file, "|");
         }
-        fprintf(file, " %d", ROWS-row);
+        fprintf(file, " %d", ROWS - row);
         if (row < rows) fprintf(file, "\n  +---+---+---+---+---+---+---+---+\n");
     }
     fprintf(file, "    a   b   c   d   e   f   g   h\n");
@@ -309,16 +321,16 @@ void make_moves() {
             int jump_c = currPoint->next->c;
             if (!multiple_jumps_on && (current->length > 2 || p > 1)) {
                 fprintf(stderr, "ERROR: Multiple jumps attempted while off\n");
-                fprintf(stdout, "Move %d is illegal: %c%d->%c%d\n", moves_made+1, c+'a', r, jump_c+'a', jump_r);
+                fprintf(stdout, "Move %d is illegal: %c%d->%c%d\n", moves_made + 1, c + 'a', r, jump_c + 'a', jump_r);
                 illegal_move = moves_made + 1;
             }
-            if (((c+r)%2) == board_flipped) {
+            if (((c + r) % 2) == board_flipped) {
                 //fprintf(stdout, "Move %d: %c%d->%c%d, Turn: %s\n", moves_made+1, c+'a', r, jump_c+'a', jump_r, turn_red?"red":"black");
                 move_piece(r, c, jump_r, jump_c);
                 //print_board_full(stdout, ROWS, COLS, board);
             } else {
-                fprintf(stderr, "ERROR: Move %d on RED square at %d,%d\n", moves_made+1, c, r);
-                fprintf(stdout, "Move %d is illegal: %c%d->%c%d\n", moves_made+1, c+'a', r, jump_c+'a', jump_r);
+                fprintf(stderr, "ERROR: Move %d on RED square at %d,%d\n", moves_made + 1, c, r);
+                fprintf(stdout, "Move %d is illegal: %c%d->%c%d\n", moves_made + 1, c + 'a', r, jump_c + 'a', jump_r);
                 illegal_move = moves_made + 1;
             }
             currPoint = currPoint->next;
@@ -328,11 +340,11 @@ void make_moves() {
 }
 
 char get_piece(int r, int c) {
-    return board[ROWS-r][c];
+    return board[ROWS - r][c];
 }
 
 void change_piece(int r, int c, char v) {
-    board[ROWS-r][c] = v;
+    board[ROWS - r][c] = v;
 }
 
 void move_piece(int start_r, int start_c, int end_r, int end_c) {
@@ -350,33 +362,33 @@ void move_piece(int start_r, int start_c, int end_r, int end_c) {
         illegal_move = moves_made + 1;
         return;
     } else if (((end_c + end_r) % 2) != board_flipped) {
-        fprintf(stderr, "ERROR, at move %d: Cannot move to RED square\n", moves_made+1);
-        fprintf(stdout, "Move %d is illegal: %c%d->%c%d\n", moves_made+1, start_c+'a', start_r, end_c+'a', end_r);
+        fprintf(stderr, "ERROR, at move %d: Cannot move to RED square\n", moves_made + 1);
+        fprintf(stdout, "Move %d is illegal: %c%d->%c%d\n", moves_made + 1, start_c + 'a', start_r, end_c + 'a', end_r);
         illegal_move = moves_made + 1;
         return;
     } else if (end_piece != '.') {
-        fprintf(stderr, "ERROR, at move %d: Cannot move to non-empty square\n", moves_made+1);
-        fprintf(stdout, "Move %d is illegal: %c%d->%c%d\n", moves_made+1, start_c+'a', start_r, end_c+'a', end_r);
+        fprintf(stderr, "ERROR, at move %d: Cannot move to non-empty square\n", moves_made + 1);
+        fprintf(stdout, "Move %d is illegal: %c%d->%c%d\n", moves_made + 1, start_c + 'a', start_r, end_c + 'a', end_r);
         illegal_move = moves_made + 1;
         return;
-    } else if (start_piece == 'r' && (end_r-start_r) <= 0) {
-        fprintf(stderr, "ERROR, at move %d: Pawn cannot move backwards\n", moves_made+1);
-        fprintf(stdout, "Move %d is illegal: %c%d->%c%d\n", moves_made+1, start_c+'a', start_r, end_c+'a', end_r);
+    } else if (start_piece == 'r' && (end_r - start_r) <= 0) {
+        fprintf(stderr, "ERROR, at move %d: Pawn cannot move backwards\n", moves_made + 1);
+        fprintf(stdout, "Move %d is illegal: %c%d->%c%d\n", moves_made + 1, start_c + 'a', start_r, end_c + 'a', end_r);
         illegal_move = moves_made + 1;
         return;
     } else if (start_piece == 'b' && (end_r - start_r) >= 0) {
-        fprintf(stderr, "ERROR, at move %d: Pawn can only move forward\n", moves_made+1);
-        fprintf(stdout, "Move %d is illegal: %c%d->%c%d\n", moves_made+1, start_c+'a', start_r, end_c+'a', end_r);
+        fprintf(stderr, "ERROR, at move %d: Pawn can only move forward\n", moves_made + 1);
+        fprintf(stdout, "Move %d is illegal: %c%d->%c%d\n", moves_made + 1, start_c + 'a', start_r, end_c + 'a', end_r);
         illegal_move = moves_made + 1;
         return;
     } else if (abs(end_r - start_r) != abs(end_c - start_c)) {
-        fprintf(stderr, "ERROR, at move %d: Can only move at diagonal\n", moves_made+1);
-        fprintf(stdout, "Move %d is illegal: %c%d->%c%d\n", moves_made+1, start_c+'a', start_r, end_c+'a', end_r);
+        fprintf(stderr, "ERROR, at move %d: Can only move at diagonal\n", moves_made + 1);
+        fprintf(stdout, "Move %d is illegal: %c%d->%c%d\n", moves_made + 1, start_c + 'a', start_r, end_c + 'a', end_r);
         illegal_move = moves_made + 1;
         return;
     } else if ((abs(end_r - start_r) > 2) || (abs(end_c - start_c) > 2)) {
-        fprintf(stderr, "ERROR, at move %d: Cannot move that far\n", moves_made+1);
-        fprintf(stdout, "Move %d is illegal: %c%d->%c%d\n", moves_made+1, start_c+'a', start_r, end_c+'a', end_r);
+        fprintf(stderr, "ERROR, at move %d: Cannot move that far\n", moves_made + 1);
+        fprintf(stdout, "Move %d is illegal: %c%d->%c%d\n", moves_made + 1, start_c + 'a', start_r, end_c + 'a', end_r);
         illegal_move = moves_made + 1;
         return;
     } else if (start_piece == '.') {
@@ -384,15 +396,17 @@ void move_piece(int start_r, int start_c, int end_r, int end_c) {
         fprintf(stdout, "Move %d is illegal: %c%d->%c%d\n", moves_made + 1, start_c + 'a', start_r, end_c + 'a', end_r);
         illegal_move = moves_made + 1;
         return;
-    } else if (abs(start_r-end_r) == 2 && abs(start_c-end_c) == 2) {
-        int captured_r = (start_r+end_r)/2;
-        int captured_c = (start_c+end_c)/2;
+    } else if (abs(start_r - end_r) == 2 && abs(start_c - end_c) == 2) {
+        int captured_r = (start_r + end_r) / 2;
+        int captured_c = (start_c + end_c) / 2;
         char jumped_piece = get_piece(captured_r, captured_c);
-        if ((curr_red && (jumped_piece == 'b' || jumped_piece == 'B')) || (!curr_red  && (jumped_piece == 'r' || jumped_piece == 'R'))) {
+        if ((curr_red && (jumped_piece == 'b' || jumped_piece == 'B')) ||
+            (!curr_red && (jumped_piece == 'r' || jumped_piece == 'R'))) {
             change_piece(captured_r, captured_c, '.');
         } else {
             fprintf(stderr, "ERROR, at move %d: Cannot jump over that square\n", moves_made + 1);
-            fprintf(stdout, "Move %d is illegal: %c%d->%c%d\n", moves_made + 1, start_c + 'a', start_r, end_c + 'a', end_r);
+            fprintf(stdout, "Move %d is illegal: %c%d->%c%d\n", moves_made + 1, start_c + 'a', start_r, end_c + 'a',
+                    end_r);
             illegal_move = moves_made + 1;
             return;
         }
@@ -406,7 +420,7 @@ void move_piece(int start_r, int start_c, int end_r, int end_c) {
 }
 
 void fileE(char *const *argv, int *i) {
-    FILE* file = fopen(argv[++(*i)], "w");
+    FILE *file = fopen(argv[++(*i)], "w");
 
     fprintf(file, "RULES: %s capture %s jumps ", capture_on ? "" : "no", multiple_jumps_on ? "multiple" : "single");
     fprintf(file, "TURN: %s ", turn_red ? "red" : "black");
@@ -420,12 +434,12 @@ void fileE(char *const *argv, int *i) {
     fprintf(file, " MOVES: ");
     move curr = moves;
     int j;
-    if (illegal_move == 0) illegal_move = n_moves+1;
-    for (j = 0; j < illegal_move-1; j++) curr = curr->next;
+    if (illegal_move == 0) illegal_move = n_moves + 1;
+    for (j = 0; j < illegal_move - 1; j++) curr = curr->next;
     while (curr->next->next != NULL) {
         point currPoint = curr->point;
         while (currPoint->next != NULL) {
-            fprintf(file, "%c%d", currPoint->c+'a', currPoint->r);
+            fprintf(file, "%c%d", currPoint->c + 'a', currPoint->r);
             currPoint = currPoint->next;
             if (currPoint->next != NULL) {
                 fprintf(file, "->");
@@ -438,17 +452,17 @@ void fileE(char *const *argv, int *i) {
 }
 
 void fileH(char *const *argv, int *i) {
-    FILE* file = fopen(argv[++(*i)], "w");
+    FILE *file = fopen(argv[++(*i)], "w");
     print_board_full(file, ROWS, COLS, board);
     fprintf(file, "\n");
     move curr = moves;
     int j;
-    if (illegal_move == 0) illegal_move = n_moves+1;
-    for (j = 0; j < illegal_move-1; j++) curr = curr->next;
+    if (illegal_move == 0) illegal_move = n_moves + 1;
+    for (j = 0; j < illegal_move - 1; j++) curr = curr->next;
     while (curr->next->next != NULL) {
         point currPoint = curr->point;
         while (currPoint->next != NULL) {
-            fprintf(file, "%c%d", currPoint->c+'a', currPoint->r);
+            fprintf(file, "%c%d", currPoint->c + 'a', currPoint->r);
             currPoint = currPoint->next;
             if (currPoint->next != NULL) {
                 fprintf(file, "->");
@@ -459,6 +473,7 @@ void fileH(char *const *argv, int *i) {
     }
     fclose(file);
 }
+/*
 
 void addMove(move *moveList, move moveAdd) {
     if (*moveList == NULL) {
@@ -477,14 +492,14 @@ void addMove(move *moveList, move moveAdd) {
 void addPoint(move move, point pointAdd) {
     point curr = move->point;
     //for (curr = (*move)->point; curr->next; curr = curr->next);
-    while(curr->next != NULL) {
+    while (curr->next != NULL) {
         curr = curr->next;
     }
     curr->next = pointAdd;
     move->length += 1;
 }
 
-void add_move_points(move * b_moves, int start_row, int start_col, int y, int x, int score) {
+void add_move_points(move *b_moves, int start_row, int start_col, int y, int x, int score) {
     if (start_row + y < 1 || start_row + y > 8 || start_col + x < 0 || start_col + x > 7) return;
     move move1 = malloc(sizeof(struct move_node));
     move1->next = NULL;
@@ -506,9 +521,9 @@ void make_move(int start_r, int start_c, int end_r, int end_c) {
     char start_piece = get_piece(start_r, start_c);
     //char end_piece = get_piece(end_r, end_c);
 
-    if (abs(start_r-end_r) == 2 && abs(start_c-end_c) == 2) {
-        int captured_r = (start_r+end_r)/2;
-        int captured_c = (start_c+end_c)/2;
+    if (abs(start_r - end_r) == 2 && abs(start_c - end_c) == 2) {
+        int captured_r = (start_r + end_r) / 2;
+        int captured_c = (start_c + end_c) / 2;
         char jumped_piece = get_piece(captured_r, captured_c);
         if (((jumped_piece == 'b' || jumped_piece == 'B') || (jumped_piece == 'r' || jumped_piece == 'R'))) {
             change_piece(captured_r, captured_c, '.');
@@ -538,35 +553,39 @@ void check_move(char c, int row, int col) {
     // TODO: calculate scores
     int y = (c == 'b' || c == 'B') ? -1 : 1;
     // check right diagonal
-    if (get_piece(row+y, col+1) == '.' || get_piece(row+y, col+1) == '"')
-        add_move_points(&b_moves, row, col, y, 1, red_score-black_score);
-    else if (get_piece(row+y, col+1) == ((c == 1) ? 'b' : 'r') || get_piece(row+y, col+1) == ((c == 1) ? 'B' : 'R')) {
+    if (get_piece(row + y, col + 1) == '.' || get_piece(row + y, col + 1) == '"')
+        add_move_points(&b_moves, row, col, y, 1, red_score - black_score);
+    else if (get_piece(row + y, col + 1) == ((c == 1) ? 'b' : 'r') ||
+             get_piece(row + y, col + 1) == ((c == 1) ? 'B' : 'R')) {
 
-        add_move_points(&b_moves, row, col, 2*y, 2, red_score-black_score);
+        add_move_points(&b_moves, row, col, 2 * y, 2, red_score - black_score);
     }
 
     // check left diagonal
-    if (get_piece(row+y, col-1) == '.' || get_piece(row+y, col-1) == '"')
-        add_move_points(&b_moves, row, col, -1, -2, red_score-black_score);
-    else if (get_piece(row+y, col-1) == ((c == 1) ? 'b' : 'r') || get_piece(row+y, col-1) == ((c == 1) ? 'B' : 'R')) {
+    if (get_piece(row + y, col - 1) == '.' || get_piece(row + y, col - 1) == '"')
+        add_move_points(&b_moves, row, col, -1, -2, red_score - black_score);
+    else if (get_piece(row + y, col - 1) == ((c == 1) ? 'b' : 'r') ||
+             get_piece(row + y, col - 1) == ((c == 1) ? 'B' : 'R')) {
 
-        add_move_points(&b_moves, row, col, 2*y, -2, red_score-black_score);
+        add_move_points(&b_moves, row, col, 2 * y, -2, red_score - black_score);
     }
     // check reverse diagonals if KING
     if (c == 'B' || c == 'R') {
         // check right reverse diagonal
-        if (get_piece(row-y, col+1) == '.' || get_piece(row-y, col+1) == '"')
-            add_move_points(&b_moves, row, col, -y, 1, red_score-black_score);
-        else if (get_piece(row-y, col+1) == ((c == 1) ? 'b' : 'r') || get_piece(row-y, col+1) == ((c == 1) ? 'B' : 'R')) {
+        if (get_piece(row - y, col + 1) == '.' || get_piece(row - y, col + 1) == '"')
+            add_move_points(&b_moves, row, col, -y, 1, red_score - black_score);
+        else if (get_piece(row - y, col + 1) == ((c == 1) ? 'b' : 'r') ||
+                 get_piece(row - y, col + 1) == ((c == 1) ? 'B' : 'R')) {
 
-            add_move_points(&b_moves, row, col, -2*y, 2, red_score-black_score);
+            add_move_points(&b_moves, row, col, -2 * y, 2, red_score - black_score);
         }
         // check left reverse diagonal
-        if (get_piece(row-y, col-1) == '.' || get_piece(row-y, col-1) == '"')
-            add_move_points(&b_moves, row, col, -1, -2, red_score-black_score);
-        else if (get_piece(row-y, col-1) == ((c == 1) ? 'b' : 'r') || get_piece(row-y, col-1) == ((c == 1) ? 'B' : 'R')) {
+        if (get_piece(row - y, col - 1) == '.' || get_piece(row - y, col - 1) == '"')
+            add_move_points(&b_moves, row, col, -1, -2, red_score - black_score);
+        else if (get_piece(row - y, col - 1) == ((c == 1) ? 'b' : 'r') ||
+                 get_piece(row - y, col - 1) == ((c == 1) ? 'B' : 'R')) {
 
-            add_move_points(&b_moves, row, col, -2*y, -2, red_score-black_score);
+            add_move_points(&b_moves, row, col, -2 * y, -2, red_score - black_score);
         }
     }
 
@@ -583,7 +602,7 @@ void check_move(char c, int row, int col) {
     }
     make_move(maxScore->point->r, maxScore->point->c, maxScore->point->next->r, maxScore->point->next->c);
     fprintf(stdout, "Win: %c%d->%c%d: score %d\n\n",
-            maxScore->point->r+'a', maxScore->point->c, maxScore->point->next->r+'a', maxScore->point->next->c,
+            maxScore->point->r + 'a', maxScore->point->c, maxScore->point->next->r + 'a', maxScore->point->next->c,
             maxScore->score);
 }
 
@@ -603,6 +622,7 @@ void find_moves(move *b_moves) {
         fprintf(stdout, "Red wins!\n");
     }
 }
+*/
 
 // BOARD object, initialize with copy of original board
 // board gets modified as passed down recursive
@@ -612,9 +632,9 @@ void find_moves(move *b_moves) {
 void move_a(char myBoard[8][8], int start_r, int start_c, int end_r, int end_c) {
     char start_piece = myBoard[start_r][start_c];
 
-    if (abs(start_r-end_r) == 2 && abs(start_c-end_c) == 2) {
-        int captured_r = (start_r+end_r)/2;
-        int captured_c = (start_c+end_c)/2;
+    if (abs(start_r - end_r) == 2 && abs(start_c - end_c) == 2) {
+        int captured_r = (start_r + end_r) / 2;
+        int captured_c = (start_c + end_c) / 2;
         char jumped_piece = myBoard[captured_r][captured_c];
         if (((jumped_piece == 'b' || jumped_piece == 'B') || (jumped_piece == 'r' || jumped_piece == 'R'))) {
             myBoard[captured_r][captured_c] = '.';
@@ -637,19 +657,24 @@ int count(char myBoard[8][8], char c) {
     return out;
 }
 
+void copy_board(char boardIn[8][8], char boardOut[8][8]) {
+    for (int i = 0; i < 8; i++) for (int j = 0; j < 8; j++) boardOut[i][j] = boardIn[i][j];
+}
+
 pointLoc *getPoints(char myBoard[8][8], int turn) {
     char c = turn ? 'r' : 'b';
     int num = 0;
-    pointLoc *points = calloc(count(myBoard, c)+1, sizeof(pointLoc));
-    for (int i = 0; i < 8; i++) for (int j = 0; j < 8; j++) {
-        if (myBoard[i][j] == c) {
-            points[num] = malloc(sizeof(struct sim_point));
-            points[num]->r = i;
-            points[num]->c = j;
-            num++;
-            //points = realloc(points, num*sizeof(struct sim_point));
+    pointLoc *points = calloc(count(myBoard, (char)tolower(c)) + count(myBoard, (char)toupper(c)) + 1, sizeof(pointLoc));
+    for (int i = 0; i < 8; i++)
+        for (int j = 7; j >= 0; j--) {
+            if (myBoard[i][j] == tolower(c) || myBoard[i][j] == toupper(c)) {
+                points[num] = malloc(sizeof(struct sim_point));
+                points[num]->r = i;
+                points[num]->c = j;
+                num++;
+                //points = realloc(points, num*sizeof(struct sim_point));
+            }
         }
-    }
     points[num] = NULL;
     return points;
 }
@@ -657,40 +682,54 @@ pointLoc *getPoints(char myBoard[8][8], int turn) {
 int check_moves(char myBoard[8][8], char c) {
     char low = tolower(c);
     char high = toupper(c);
-    char jump = (low == 'r') ? 'b':'r';
+    char jump = (low == 'r') ? 'b' : 'r';
     int y = (low == 'r') ? -1 : 1;
     int move_count = 0;
     for (int i = 0; i < 8; i++) {
         for (int j = 0; j < 8; j++) {
-            if (board[i][j] == low) {
-                if (board[i+y][j+1] == '.' || ((board[i+y][j+1] == jump || board[i+2*y][j+2] == toupper(jump)) && board[i+2*y][j+2] == '.')) move_count++;
-                if (board[i+y][j-1] == '.' || ((board[i+y][j-1] == jump || board[i+2*y][j-2] == toupper(jump)) && board[i+2*y][j-2] == '.')) move_count++;
+            if (myBoard[i][j] == low) {
+                if (myBoard[i + y][j + 1] == '.' ||
+                    ((myBoard[i + y][j + 1] == jump || myBoard[i + 2 * y][j + 2] == toupper(jump)) &&
+                            myBoard[i + 2 * y][j + 2] == '.'))
+                    move_count++;
+                if (myBoard[i + y][j - 1] == '.' ||
+                    ((myBoard[i + y][j - 1] == jump || myBoard[i + 2 * y][j - 2] == toupper(jump)) &&
+                            myBoard[i + 2 * y][j - 2] == '.'))
+                    move_count++;
             }
-            if (board[i][j] == high) {
-                if (board[i+y][j+1] == '.' || ((board[i+y][j+1] == jump || board[i+2*y][j+2] == toupper(jump)) && board[i+2*y][j+2] == '.')) move_count++;
-                if (board[i+y][j-1] == '.' || ((board[i+y][j-1] == jump || board[i+2*y][j-2] == toupper(jump)) && board[i+2*y][j-2] == '.')) move_count++;
-                if (board[i-y][j+1] == '.' || ((board[i-y][j+1] == jump || board[i-2*y][j+2] == toupper(jump)) && board[i-2*y][j+2] == '.')) move_count++;
-                if (board[i-y][j-1] == '.' || ((board[i-y][j-1] == jump || board[i-2*y][j-2] == toupper(jump)) && board[i-2*y][j-2] == '.')) move_count++;
+            if (myBoard[i][j] == high) {
+                if (myBoard[i + y][j + 1] == '.' ||
+                    ((myBoard[i + y][j + 1] == jump || myBoard[i + 2 * y][j + 2] == toupper(jump)) &&
+                            myBoard[i + 2 * y][j + 2] == '.'))
+                    move_count++;
+                if (myBoard[i + y][j - 1] == '.' ||
+                    ((myBoard[i + y][j - 1] == jump || myBoard[i + 2 * y][j - 2] == toupper(jump)) &&
+                            myBoard[i + 2 * y][j - 2] == '.'))
+                    move_count++;
+                if (myBoard[i - y][j + 1] == '.' ||
+                    ((myBoard[i - y][j + 1] == jump || myBoard[i - 2 * y][j + 2] == toupper(jump)) &&
+                            myBoard[i - 2 * y][j + 2] == '.'))
+                    move_count++;
+                if (myBoard[i - y][j - 1] == '.' ||
+                    ((myBoard[i - y][j - 1] == jump || myBoard[i - 2 * y][j - 2] == toupper(jump)) &&
+                            myBoard[i - 2 * y][j - 2] == '.'))
+                    move_count++;
             }
         }
     }
     return move_count;
 }
-
+/*
 int score(char myBoard[8][8], int turn, int start_r, int start_c) {
     if (turn) {
-        if (!check_moves(myBoard,'r')) return -99;
-        if (!check_moves(myBoard,'b')) return 99;
-        return ((count(myBoard,'r')+2*count(myBoard,'R')) - (count(myBoard,'b')+2*count(myBoard,'B')));
+        if (!check_moves(myBoard, 'r')) return -99;
+        if (!check_moves(myBoard, 'b')) return 99;
+        return ((count(myBoard, 'r') + 2 * count(myBoard, 'R')) - (count(myBoard, 'b') + 2 * count(myBoard, 'B')));
     } else {
-        if (!check_moves(myBoard,'b')) return -99;
-        if (!check_moves(myBoard,'r')) return 99;
-        return ((count(myBoard,'b')+2*count(myBoard,'B')) - (count(myBoard,'r')+2*count(myBoard,'R')));
+        if (!check_moves(myBoard, 'b')) return -99;
+        if (!check_moves(myBoard, 'r')) return 99;
+        return ((count(myBoard, 'b') + 2 * count(myBoard, 'B')) - (count(myBoard, 'r') + 2 * count(myBoard, 'R')));
     }
-}
-
-void copy_board(char boardIn[8][8], char boardOut[8][8]) {
-    for (int i = 0; i < 8; i++) for (int j = 0; j < 8; j++) boardOut[i][j] = boardIn[i][j];
 }
 
 int gTurn = 0; // turn 1 = red
@@ -704,10 +743,12 @@ int recursive(char boardIn[8][8], int depth, int start_r, int start_c, int end_r
     for (int i = 0; i < depth; i++) fprintf(stdout, "\t");
     //print_board_full(stdout, 8, 8, myBoard);
     if (depth >= d_depth) {
-        fprintf(stdout, ". %c%d->%c%d for %s: score %d\n", start_c+'a', ROWS-start_r, end_c+'a', ROWS-end_r, turn ? "black":"red", score1);
+        fprintf(stdout, ". %c%d->%c%d for %s: score %d\n", start_c + 'a', ROWS - start_r, end_c + 'a', ROWS - end_r,
+                turn ? "black" : "red", score1);
         return score(myBoard, turn, start_r, start_c);
     } else {
-        fprintf(stdout, "? %c%d->%c%d for %s:\n", start_c+'a', ROWS-start_r, end_c+'a', ROWS-end_r, turn ? "black":"red");
+        fprintf(stdout, "? %c%d->%c%d for %s:\n", start_c + 'a', ROWS - start_r, end_c + 'a', ROWS - end_r,
+                turn ? "black" : "red");
     }
     int y = turn ? -1 : 1;
     // list of p points
@@ -721,33 +762,38 @@ int recursive(char boardIn[8][8], int depth, int start_r, int start_c, int end_r
         pointLoc p = points[j];
         // TODO support jumps
         // left
-        if (myBoard[p->r+y][p->c-1] == '.') {
-            scoreLeft = recursive(myBoard, depth+1, p->r, p->c, p->r+y, p->c-1, turn);
+        if (myBoard[p->r + y][p->c - 1] == '.') {
+            scoreLeft = recursive(myBoard, depth + 1, p->r, p->c, p->r + y, p->c - 1, turn);
             moves_count++;
-        } else if ((myBoard[p->r+2*y][p->c-2] == (turn ? 'b':'r')) || (myBoard[p->r+2*y][p->c-2] == turn ? 'B':'R')) {
-            scoreLeft = recursive(myBoard, depth+1, p->r, p->c, p->r+2*y, p->c-2, turn);
+        } else if ((myBoard[p->r + 2 * y][p->c - 2] == (turn ? 'b' : 'r')) ||
+                   (myBoard[p->r + 2 * y][p->c - 2] == turn ? 'B' : 'R')) {
+            scoreLeft = recursive(myBoard, depth + 1, p->r, p->c, p->r + 2 * y, p->c - 2, turn);
             moves_count++;
         }
         // right
         moves_count = 0;
-        if (myBoard[p->r+y][p->c+1] == '.') {
-            scoreRight = recursive(myBoard, depth+1, p->r, p->c, p->r+y, p->c+1, turn);
+        if (myBoard[p->r + y][p->c + 1] == '.') {
+            scoreRight = recursive(myBoard, depth + 1, p->r, p->c, p->r + y, p->c + 1, turn);
             moves_count++;
-        } else if ((myBoard[p->r+2*y][p->c+2] == (turn ? 'b':'r')) || (myBoard[p->r+2*y][p->c+2] == (turn ? 'B':'R'))) {
-            scoreRight = recursive(myBoard, depth+1, p->r, p->c, p->r+2*y, p->c+2, turn);
+        } else if ((myBoard[p->r + 2 * y][p->c + 2] == (turn ? 'b' : 'r')) ||
+                   (myBoard[p->r + 2 * y][p->c + 2] == (turn ? 'B' : 'R'))) {
+            scoreRight = recursive(myBoard, depth + 1, p->r, p->c, p->r + 2 * y, p->c + 2, turn);
             moves_count++;
         }
 
         for (int i = 0; i < depth; i++) fprintf(stdout, "\t");
         if (scoreLeft > scoreRight) {
-            fprintf(stdout, ". %c%d->%c%d for %s: score %d\n", start_c+'a', ROWS-start_r, end_c+'a', ROWS-end_r, turn ? "black":"red", scoreLeft);
+            fprintf(stdout, ". %c%d->%c%d for %s: score %d\n", start_c + 'a', ROWS - start_r, end_c + 'a', ROWS - end_r,
+                    turn ? "black" : "red", scoreLeft);
         } else {
-            fprintf(stdout, ". %c%d->%c%d for %s: score %d\n", start_c+'a', ROWS-start_r, end_c+'a', ROWS-end_r, turn ? "black":"red", scoreRight);
+            fprintf(stdout, ". %c%d->%c%d for %s: score %d\n", start_c + 'a', ROWS - start_r, end_c + 'a', ROWS - end_r,
+                    turn ? "black" : "red", scoreRight);
         }
     }
     if (!j) {
         for (int i = 0; i < depth; i++) fprintf(stdout, "\t");
-        fprintf(stdout, ". %c%d->%c%d for %s: score %d\n", start_c+'a', ROWS-start_r, end_c+'a', ROWS-end_r, turn ? "black":"red", scoreLeft);
+        fprintf(stdout, ". %c%d->%c%d for %s: score %d\n", start_c + 'a', ROWS - start_r, end_c + 'a', ROWS - end_r,
+                turn ? "black" : "red", scoreLeft);
     }
 
     return score(myBoard, turn, start_r, start_c);//scoreLeft > scoreRight ? scoreLeft : scoreRight; // return max?
@@ -770,25 +816,188 @@ int start_recurse(char boardIn[8][8], int depth) {
         pointLoc p = points[i];
         // TODO support jumps
         // left
-        if (myBoard[p->r+y][p->c-1] == '.') {
-            scoreLeft = recursive(myBoard, 0, p->r, p->c, p->r+y, p->c-1, turn);
+        if (myBoard[p->r + y][p->c - 1] == '.') {
+            scoreLeft = recursive(myBoard, 0, p->r, p->c, p->r + y, p->c - 1, turn);
             moves_count++;
-        } else if ((myBoard[p->r+2*y][p->c-2] == (turn ? 'b':'r')) || (myBoard[p->r+2*y][p->c-2] == turn ? 'B':'R')) {
-            scoreLeft = recursive(myBoard, 0, p->r, p->c, p->r+2*y, p->c-2, turn);
+        } else if ((myBoard[p->r + 2 * y][p->c - 2] == (turn ? 'b' : 'r')) ||
+                   (myBoard[p->r + 2 * y][p->c - 2] == turn ? 'B' : 'R')) {
+            scoreLeft = recursive(myBoard, 0, p->r, p->c, p->r + 2 * y, p->c - 2, turn);
             moves_count++;
         }
-        if (!count(myBoard, (turn ? 'b':'r')) && !count(myBoard, (turn ? 'B':'R'))) scoreLeft = 99;
+        if (!count(myBoard, (turn ? 'b' : 'r')) && !count(myBoard, (turn ? 'B' : 'R'))) scoreLeft = 99;
         if (!moves_count) scoreLeft = 99;
         // right
-        if (myBoard[p->r+y][p->c+1] == '.') {
-            scoreRight = recursive(myBoard, 0, p->r, p->c, p->r+y, p->c+1, turn);
+        if (myBoard[p->r + y][p->c + 1] == '.') {
+            scoreRight = recursive(myBoard, 0, p->r, p->c, p->r + y, p->c + 1, turn);
             moves_count++;
-        } else if ((myBoard[p->r+2*y][p->c+2] == (turn ? 'b':'r')) || (myBoard[p->r+2*y][p->c+2] == (turn ? 'B':'R'))) {
-            scoreLeft = recursive(myBoard, 0, p->r, p->c, p->r+2*y, p->c+2, turn);
+        } else if ((myBoard[p->r + 2 * y][p->c + 2] == (turn ? 'b' : 'r')) ||
+                   (myBoard[p->r + 2 * y][p->c + 2] == (turn ? 'B' : 'R'))) {
+            scoreLeft = recursive(myBoard, 0, p->r, p->c, p->r + 2 * y, p->c + 2, turn);
             moves_count++;
         }
-        if (!count(myBoard, (turn ? 'b':'r')) && !count(myBoard, (turn ? 'B':'R'))) scoreRight = 99;
+        if (!count(myBoard, (turn ? 'b' : 'r')) && !count(myBoard, (turn ? 'B' : 'R'))) scoreRight = 99;
         if (!moves_count) scoreRight = 99;
     }
     return scoreLeft > scoreRight ? scoreLeft : scoreRight; // return max?
+}*/
+
+/*
+ * recursive(board, turn, move)
+ *
+ *
+ * call recursive for each move
+ *  make the move
+ *  get list of opponent moves (alphabetical order)
+ *  maxScore <- 0
+ *  get list of opponent points
+ *      if (depth > maxDepth) return score(numMoves)
+ *      get list of moves for each point (alphabetical order)
+ *          val = recursive call each move
+ *          -> if val > maxScore, maxScore = val;
+ *  return maxScore
+ */
+
+/*
+ *
+ *      make move
+ *      if (depth): return score of current game configuration
+ *
+ *      maxScore <- 0
+ *      loop through points
+ *          loop through moves
+ *              score = recursive(move)
+ *              if score > maxScore: maxScore = score
+ *
+ *      return score
+ * */
+
+typedef struct pointMove_node {
+    int start_r;
+    int start_c;
+    int end_r;
+    int end_c;
+} *pointMove;
+
+void move_m(char myBoard[8][8], pointMove theMove) {
+    if (theMove == NULL) return;
+    int start_r = theMove->start_r;
+    int start_c = theMove->start_c;
+    int end_r = theMove->end_r;
+    int end_c = theMove->end_c;
+    char start_piece = myBoard[start_r][start_c];
+
+    if (abs(start_r - end_r) == 2 && abs(start_c - end_c) == 2) {
+        int captured_r = (start_r + end_r) / 2;
+        int captured_c = (start_c + end_c) / 2;
+        char jumped_piece = myBoard[captured_r][captured_c];
+        if (((jumped_piece == 'b' || jumped_piece == 'B') || (jumped_piece == 'r' || jumped_piece == 'R'))) {
+            myBoard[captured_r][captured_c] = '.';
+        }
+    }
+    myBoard[end_r][end_c] = start_piece;
+    myBoard[start_r][start_c] = '.';
+    if (myBoard[end_r][end_c] == 'r' && end_r == 7) myBoard[end_r][end_c] = 'R';
+    if (myBoard[end_r][end_c] == 'b' && end_r == 0) myBoard[end_r][end_c] = 'B';
+}
+
+pointMove new_move(int start_r, int start_c, int end_r, int end_c) {
+    pointMove moveOut = malloc(sizeof(struct pointMove_node));
+    moveOut->start_r = start_r;
+    moveOut->start_c = start_c;
+    moveOut->end_r = end_r;
+    moveOut->end_c = end_c;
+    return moveOut;
+}
+
+pointMove *getMoves_m(char myBoard[8][8], pointLoc point) {
+    pointMove *movesList = calloc(5, sizeof(pointMove));
+    int i = point->r;
+    int j = point->c;
+    char c = myBoard[i][j];
+    char low = (char)tolower(c);
+    char high = (char)toupper(c);
+    char jump = (low == 'r') ? 'b' : 'r';
+    int y = (low == 'r') ? -1 : 1;
+    int move_count = 0;
+
+    if (myBoard[i+y][j-1] == '.') movesList[move_count++] = new_move(i, j, i+y, j-1);
+    else if ((tolower(myBoard[i+y][j-1]) == jump && myBoard[i+2*y][j-2] == '.')) movesList[move_count++] = new_move(i, j, i+2*y, j-2);
+
+    if (myBoard[i+y][j+1] == '.') movesList[move_count++] = new_move(i, j, i+y, j+1);
+    else if ((tolower(myBoard[i+y][j+1]) == jump && myBoard[i+2*y][j+2] == '.')) movesList[move_count++] = new_move(i, j, i+2*y, j+2);
+
+    if (c == high) {
+        if (myBoard[i-y][j-1] == '.') movesList[move_count++] = new_move(i, j, i-y, j-1);
+        else if ((tolower(myBoard[i-y][j-1]) == jump && myBoard[i-2*y][j-2] == '.')) movesList[move_count++] = new_move(i, j, i-2*y, j-2);
+
+        if (myBoard[i-y][j+1] == '.') movesList[move_count++] = new_move(i, j, i-y, j+1);
+        else if ((tolower(myBoard[i-y][j+1]) == jump && myBoard[i-2*y][j+2] == '.')) movesList[move_count++] = new_move(i, j, i-2*y, j+2);
+    }
+    return movesList;
+}
+
+int score_m(char myBoard[8][8], int turn) {
+    if (turn) {
+        if (!check_moves(myBoard, 'r')) return -99;
+        if (!check_moves(myBoard, 'b')) return 99;
+        return ((count(myBoard, 'r') + 2 * count(myBoard, 'R')) - (count(myBoard, 'b') + 2 * count(myBoard, 'B')));
+    } else {
+        if (!check_moves(myBoard, 'b')) return -99;
+        if (!check_moves(myBoard, 'r')) return 99;
+        return ((count(myBoard, 'b') + 2 * count(myBoard, 'B')) - (count(myBoard, 'r') + 2 * count(myBoard, 'R')));
+    }
+}
+
+int recurse_count=0;
+int recursive_score(char boardIn[8][8], int depth, int turn, pointMove nextMove) {
+    char myBoard[8][8];
+    copy_board(boardIn, myBoard);
+    move_m(myBoard, nextMove);
+    //print_board_full(stdout, 8, 8, myBoard);
+    int score = score_m(myBoard, !turn);
+    for (int i = 0; i < depth; i++) fprintf(stdout, "\t");
+    if (depth >= d_depth) {
+        fprintf(stdout, ". %c%d->%c%d for %s: score %d\n", nextMove->start_c+'a', ROWS-nextMove->start_r, nextMove->end_c+'a', ROWS-nextMove->end_r, turn ? "black" : "red", score);
+        return score;
+    } else {
+        fprintf(stdout, "? %c%d->%c%d for %s:\n", nextMove->start_c+'a', ROWS-nextMove->start_r, nextMove->end_c+'a', ROWS-nextMove->end_r, turn ? "black" : "red");
+    }
+
+    pointLoc *points = getPoints(myBoard, turn);
+    pointMove maxMove = nextMove;
+    int j = 0;
+    for (j = 0; points[j] != NULL; j++) {
+        pointMove *pointMoves = getMoves_m(myBoard, points[j]);
+        int k = 0;
+        for (k = 0; pointMoves[k] != NULL; k++) {
+            int val = recursive_score(myBoard, depth+1, !turn, pointMoves[k]);
+            if (val>score) {
+                score = val;
+                maxMove = pointMoves[k];
+            }
+        }
+    }
+    if (!turn) score = -score;
+    for (int i = 0; i < depth; i++) fprintf(stdout, "\t");
+    fprintf(stdout, ". %c%d->%c%d for %s: score %d\n", maxMove->start_c+'a', ROWS-maxMove->start_r, maxMove->end_c+'a', ROWS-maxMove->end_r, turn ? "black" : "red", score);
+    return score;
+}
+
+void start_recursive_score(char myBoard[8][8], int turn) {
+    int depth = 0;
+    pointLoc *points = getPoints(myBoard, turn);
+    pointMove maxMove;
+    int score = score_m(myBoard, turn);
+    int j = 0;
+    for (j = 0; points[j] != NULL; j++) {
+        pointMove *pointMoves = getMoves_m(myBoard, points[j]);
+        int k = 0;
+        for (k = 0; pointMoves[k] != NULL; k++) {
+            int val = recursive_score(myBoard, depth, !turn, pointMoves[k]);
+            if (val>score) {
+                score = val;
+                maxMove = pointMoves[k];
+            }
+        }
+    }
 }

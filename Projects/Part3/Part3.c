@@ -21,7 +21,9 @@ int main(int argc, char* argv[]) {
 
     //move b_moves = NULL;
     //find_moves(&b_moves);
-    start_recurse(board, 1);
+    //start_recurse(board, 1);
+
+    start_recursive_score(board, 1);
 
     //print_board_full(stdout, ROWS, COLS, board);
     /*Scoring
