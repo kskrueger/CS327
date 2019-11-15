@@ -41,8 +41,7 @@ int scan_board(int rows, int cols, char array[rows][cols]);
 
 void print_board(int rows, int cols, char array[rows][cols]);
 
-void array_count(int rows, int cols, char array[rows][cols],
-                 int *red_kings, int *red_pawns, int *black_kings, int *black_pawns);
+void array_count(int rows, int cols, char array[rows][cols], int *red_kings, int *red_pawns, int *black_kings, int *black_pawns);
 
 move scan_moves();
 
@@ -643,7 +642,6 @@ int recursive_score(char boardIn[8][8], int depth, int turn, pointMove nextMove)
     }
 
     pointLoc *points = getPoints(myBoard, turn);
-    pointMove maxMove = nextMove;
     int j = 0;
     for (j = 0; points[j] != NULL; j++) {
         pointMove *pointMoves = getMoves_m(myBoard, points[j]);
@@ -652,7 +650,6 @@ int recursive_score(char boardIn[8][8], int depth, int turn, pointMove nextMove)
             int val = recursive_score(myBoard, depth+1, !turn, pointMoves[k]);
             if (val>score) {
                 score = val;
-                maxMove = pointMoves[k];
             }
         }
     }
