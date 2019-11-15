@@ -665,8 +665,8 @@ pointLoc *getPoints(char myBoard[8][8], int turn) {
     char c = turn ? 'r' : 'b';
     int num = 0;
     pointLoc *points = calloc(count(myBoard, (char)tolower(c)) + count(myBoard, (char)toupper(c)) + 1, sizeof(pointLoc));
-    for (int i = 0; i < 8; i++)
-        for (int j = 7; j >= 0; j--) {
+    for (int i = 7; i >= 0; i--)
+        for (int j = 0; j < 8; j++) {
             if (myBoard[i][j] == tolower(c) || myBoard[i][j] == toupper(c)) {
                 points[num] = malloc(sizeof(struct sim_point));
                 points[num]->r = i;
