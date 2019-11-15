@@ -596,7 +596,6 @@ pointMove *getMoves_m(char myBoard[8][8], pointLoc point) {
     char high = (char)toupper(c);
     char jump = (low == 'r') ? 'b' : 'r';
     int y = (low == 'r') ? -1 : 1;
-    int x = (low == 'r') ? 1 : -1;
     int move_count = 0;
 
     if (myBoard[i+y][j-1] == '.') movesList[move_count++] = new_move(i, j, i+y, j-1);
@@ -632,7 +631,7 @@ int recursive_score(char boardIn[8][8], int depth, int turn, pointMove nextMove)
     copy_board(boardIn, myBoard);
     move_m(myBoard, nextMove);
     int score = score_m(myBoard, !turn);
-    if (verbose_on) for (int i = 0; i < depth; i++) fprintf(stdout, "\t");
+    if (verbose_on) for (int i = 0; i < depth; i++) fprintf(stdout, "    ");
     if (depth >= d_depth) {
         if (verbose_on) fprintf(stdout, ". %c%d->%c%d for %s: score %d\n", nextMove->start_c+'a', ROWS-nextMove->start_r, nextMove->end_c+'a', ROWS-nextMove->end_r, turn ? "black" : "red", score);
         return score;
@@ -655,8 +654,8 @@ int recursive_score(char boardIn[8][8], int depth, int turn, pointMove nextMove)
         }
     }
     if (!turn) score = -score;
-    if (verbose_on) for (int i = 0; i < depth; i++) fprintf(stdout, "\t");
-    if (verbose_on) fprintf(stdout, ". %c%d->%c%d for %s: score %d\n", maxMove->start_c+'a', ROWS-maxMove->start_r, maxMove->end_c+'a', ROWS-maxMove->end_r, turn ? "black" : "red", score);
+    if (verbose_on) for (int i = 0; i < depth; i++) fprintf(stdout, "    ");
+    if (verbose_on) fprintf(stdout, ". %c%d->%c%d for %s: score %d\n", nextMove->start_c+'a', ROWS-nextMove->start_r, nextMove->end_c+'a', ROWS-nextMove->end_r, turn ? "black" : "red", score);
     return score;
 }
 
