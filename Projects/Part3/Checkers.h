@@ -598,6 +598,11 @@ pointMove *getMoves_m(char myBoard[8][8], pointLoc point) {
     int y = (low == 'r') ? -1 : 1;
     int move_count = 0;
 
+    if (c == high) {
+        if (myBoard[i-y][j-1] == '.') movesList[move_count++] = new_move(i, j, i-y, j-1);
+        else if ((tolower(myBoard[i-y][j-1]) == jump && myBoard[i-2*y][j-2] == '.')) movesList[move_count++] = new_move(i, j, i-2*y, j-2);
+    }
+
     if (myBoard[i+y][j-1] == '.') movesList[move_count++] = new_move(i, j, i+y, j-1);
     else if ((tolower(myBoard[i+y][j-1]) == jump && myBoard[i+2*y][j-2] == '.')) movesList[move_count++] = new_move(i, j, i+2*y, j-2);
 
@@ -605,12 +610,10 @@ pointMove *getMoves_m(char myBoard[8][8], pointLoc point) {
     else if ((tolower(myBoard[i+y][j+1]) == jump && myBoard[i+2*y][j+2] == '.')) movesList[move_count++] = new_move(i, j, i+2*y, j+2);
 
     if (c == high) {
-        if (myBoard[i-y][j-1] == '.') movesList[move_count++] = new_move(i, j, i-y, j-1);
-        else if ((tolower(myBoard[i-y][j-1]) == jump && myBoard[i-2*y][j-2] == '.')) movesList[move_count++] = new_move(i, j, i-2*y, j-2);
-
         if (myBoard[i-y][j+1] == '.') movesList[move_count++] = new_move(i, j, i-y, j+1);
         else if ((tolower(myBoard[i-y][j+1]) == jump && myBoard[i-2*y][j+2] == '.')) movesList[move_count++] = new_move(i, j, i-2*y, j+2);
     }
+
     return movesList;
 }
 
