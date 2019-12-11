@@ -112,7 +112,7 @@ void plot_board(char** array) {
                                     1 + i * gridY + gridY / 2, color, TB_WHITE);
                 } else {
                     printStringLeft(" ", midX + j * gridX + gridX / 2,
-                                    1 + i * gridY + gridY / 2, color, TB_WHITE);
+                                    1 + i * gridY + gridY / 2, TB_DEFAULT, TB_WHITE);
                 }
             }
         }
@@ -122,8 +122,6 @@ void plot_board(char** array) {
 
 int maxLine;
 void list_moves() {
-    pointMove moveList[count_moves()];
-
     int midX = tb_width() / 2;
     int line = 7;
     int left = 1;
@@ -205,7 +203,7 @@ void moving_cursor() {
     int line = 7;
     int side = 0;
     int xPos = 0;
-    int num = 4;
+    int num = 1;
 
     tb_set_cursor(0, line);
     tb_present();
@@ -251,6 +249,7 @@ void moving_cursor() {
         }
         tb_set_cursor(xPos+side*(midX-7), line);
         moveBoard(num, board);
+
         tb_present();
     }
 }
@@ -260,6 +259,39 @@ void moveBoard(int n, char boardIn[8][8]) {
     for (int i = 0; i < 8; i++) myBoard[i] = malloc(sizeof(char)*8);
     copy_board_ref(boardIn, myBoard);
     //move_m(myBoard, nextMove);
+
+    colorRange(0, tb_width(), 65, tb_height(), TB_DEFAULT);
+    int num = n;
+    /*move curr = moves;
+    int j;
+    int x = 0;
+    int y = 65;
+    while (curr->next->next != NULL && num-- > 0) {
+        point currPoint = curr->point;
+        while (currPoint->next != NULL) {
+            //fprintf(file, "%c%d", currPoint->c+'a', currPoint->r);
+            char* str = malloc(sizeof(char) * 3);
+            sprintf(str, "%c%d", currPoint->c + 'a', currPoint->r);
+            if (currPoint->next) {
+                move_noerror(currPoint->r, currPoint->c, currPoint->next->r, currPoint->next->c, myBoard);
+            }
+            if (x+2 >= tb_width()) {
+                y++;
+                x = 0;
+            }
+            printStringLeft(str, x, y, TB_DEFAULT, TB_DEFAULT);
+            x+=2;
+            currPoint = currPoint->next;
+            if (currPoint->next != NULL) {
+                //fprintf(file, "->");
+                printStringLeft("->", x, y, TB_DEFAULT, TB_DEFAULT);
+                x+=2;
+            }
+        }
+        curr = curr->next;
+        printStringLeft(" ", x, y, TB_DEFAULT, TB_DEFAULT);
+        x++;
+    }*/
 
     move curr = moves;
     while (curr->next->next != NULL && n-- > 0) {
