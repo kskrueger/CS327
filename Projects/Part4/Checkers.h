@@ -488,6 +488,14 @@ void copy_board(char boardIn[8][8], char boardOut[8][8]) {
     for (int i = 0; i < 8; i++) for (int j = 0; j < 8; j++) boardOut[i][j] = boardIn[i][j];
 }
 
+void copy_board_ref(char boardIn[8][8], char **boardOut) {
+    for (int i = 0; i < 8; i++) {
+        for (int j = 0; j < 8; j++) {
+            boardOut[i][j] = boardIn[i][j];
+        }
+    }
+}
+
 pointLoc *getPoints(char myBoard[8][8], int turn) {
     char c = turn ? 'r' : 'b';
     int num = 0;
@@ -671,4 +679,57 @@ void start_recursive_score(char myBoard[8][8], int turn) {
             if (!verbose_on) fprintf(stdout, "%c%d->%c%d for %s: score %d\n", pointMoves[k]->start_c+'a', ROWS-pointMoves[k]->start_r, pointMoves[k]->end_c+'a', ROWS-pointMoves[k]->end_r, !turn ? "black" : "red", val);
         }
     }
+}
+
+char get_piece_customBoard(int r, int c, char** myBoard) {
+    return myBoard[ROWS - r][c];
+}
+
+void change_piece_customBoard(int r, int c, char v, char** myBoard) {
+    myBoard[ROWS - r][c] = v;
+}
+
+int move_noerror(int start_r, int start_c, int end_r, int end_c, char** myBoard) {
+    char start_piece = get_piece_customBoard(start_r, start_c, myBoard);
+    char end_piece = get_piece_customBoard(end_r, end_c, myBoard);
+    int curr_red = -1;
+    if (start_piece == 'r' || start_piece == 'R') {
+        curr_red = 1;
+    } else if (start_piece == 'b' || start_piece == 'B') {
+        curr_red = 0;
+    }
+    if (curr_red != turn_red) {
+        return -1;
+    } else if (((end_c + end_r) % 2) != board_flipped) {
+        return -1;
+    } else if (end_piece != '.') {
+        return -1;
+    } else if (start_piece == 'r' && (end_r - start_r) <= 0) {
+        return -1;
+    } else if (start_piece == 'b' && (end_r - start_r) >= 0) {
+        return -1;
+    } else if (abs(end_r - start_r) != abs(end_c - start_c)) {
+        return -1;
+    } else if ((abs(end_r - start_r) > 2) || (abs(end_c - start_c) > 2)) {
+        return -1;
+    } else if (start_piece == '.') {
+        return -1;
+    } else if (abs(start_r - end_r) == 2 && abs(start_c - end_c) == 2) {
+        int captured_r = (start_r + end_r) / 2;
+        int captured_c = (start_c + end_c) / 2;
+        char jumped_piece = get_piece_customBoard(captured_r, captured_c, myBoard);
+        if ((curr_red && (jumped_piece == 'b' || jumped_piece == 'B')) ||
+            (!curr_red && (jumped_piece == 'r' || jumped_piece == 'R'))) {
+            change_piece_customBoard(captured_r, captured_c, '.', myBoard);
+        } else {
+            return -1;
+        }
+    }
+    change_piece_customBoard(end_r, end_c, start_piece, myBoard);
+    change_piece_customBoard(start_r, start_c, '.', myBoard);
+    if (get_piece_customBoard(end_r, end_c, myBoard) == 'r' && end_r == 8) change_piece_customBoard(end_r, end_c, 'R', myBoard);
+    if (get_piece_customBoard(end_r, end_c, myBoard) == 'b' && end_r == 1) change_piece_customBoard(end_r, end_c, 'B', myBoard);
+    turn_red = !turn_red;
+    moves_made++;
+    return 1;
 }
