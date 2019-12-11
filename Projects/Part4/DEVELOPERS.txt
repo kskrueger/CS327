@@ -1,3 +1,34 @@
+Part 4:
+For part 4, I am using the Termbox library to display the checkers game as a GUI interface in terminal window. This library
+can be called with commands to init the screen, place cells (character, background color, text color), and shutdown. I first
+created custom functions to print text to the screen, plot color on the screen. Then, to plot the board on the checker board
+colors, and an interface to interact with the arrow keys to move around the moves for editing.
+
+int printStringLeft(char *word, int x, int y, int fgColor, int bgColor);
+Print a string starting with left character first. This uses a loop to move across the termbox window and print each character.
+
+int printStringRight(char *word, int x, int y, int fgColor, int bgColor);
+The prints a string starting with the right character and works backwards. This uses a loop to move across the termbox
+window and print in reverse.
+
+void waitKey(int key);
+Wait for a certain key to be pressed (such as the ESC button).
+
+void colorRange(int startX, int endX, int startY, int endY, int bgColor);
+Fill an area of the screen with a color based on x, y, endX, and endY coordinates.
+
+void init_screen();
+Main method to initialize all of the GUI main elements. This includes the blue bar at top (and name), the checker board
+the initial plot on the checker board, and the initial moves.
+
+void moving_cursor();
+This method interacts with the keyboard arrows to move around the listed moves. It also calls to update the board as moves
+are iterated.
+
+void moveBoard(int n, char boardIn[8][8]);
+This method is called to move elements around the checker board, up to n moves ahead. n is typically passed in from the
+moving_cursor() method as the move number on the list.
+
 Part 3:
 I make use of a recursive function to check all combination of the board moves.
 For each direction a piece can jump, a recursive function is called that then checks the directions of all colors of
