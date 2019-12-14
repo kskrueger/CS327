@@ -12,6 +12,6 @@ Part 4 is implemented to include the following options:
     List of moves display
     Hotkeys display
     Moving cursor
-    Scrolling (WIP)
+    Scrolling
     Ability to change/append move (WIP)
     Ability to save edits
