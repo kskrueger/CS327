@@ -22,6 +22,8 @@ void moving_cursor();
 
 void moveBoard(int n, char boardIn[8][8]);
 
+move *getMove(int num);
+
 int main(int argc, char *argv[]) {
     if (argc < 2) {
         fprintf(stderr, "Arguments must include a filepath!\n");
@@ -32,11 +34,11 @@ int main(int argc, char *argv[]) {
     int count_of_moves = count_moves();
     if (n_moves == -1 || n_moves > count_of_moves) n_moves = count_of_moves;
 
+    //waitKey(TB_KEY_ESC);
+
     init_screen();
 
     moving_cursor();
-
-    //waitKey(TB_KEY_ESC);
 
     tb_shutdown();
     printf("End\n");
@@ -135,8 +137,6 @@ void list_moves(int start_move, int end_move) {
     for (int i = 0; i < 8; i++) myBoard[i] = malloc(sizeof(char)*8);
     copy_board_ref(board, myBoard);
 
-    int move_lines = count_moves()/2;
-
     if (start_move > 0) {
         printStringLeft(":     ", 0, 6, TB_DEFAULT, TB_DEFAULT);
         printStringRight(":     ", midX - 2, 6, TB_DEFAULT, TB_DEFAULT);
@@ -173,9 +173,9 @@ void list_moves(int start_move, int end_move) {
                 error = 1;
             }
 
-            char *temp = malloc(sizeof(char) * 30);
-            sprintf(temp, "mc:%d sm:%d ln:%d mx:%d", move_count, start_move, line, maxLine);
-            printStringLeft(temp, 10, 4, TB_DEFAULT, TB_DEFAULT);
+            //char *temp = malloc(sizeof(char) * 30);
+            //sprintf(temp, "mc:%d sm:%d ln:%d mx:%d", move_count, start_move, line, maxLine);
+            //printStringLeft(temp, 10, 4, TB_DEFAULT, TB_DEFAULT);
             if (move_count >= start_move && line < maxLine) {
                 if (left) {
                     printStringLeft(str, 0, line, color, TB_DEFAULT);
@@ -188,7 +188,6 @@ void list_moves(int start_move, int end_move) {
         }
         move_count++;
     }
-    //maxLine = line;
 }
 
 int start_move = 0;
@@ -281,6 +280,7 @@ void moving_cursor() {
         } else if (TB_KEY_ARROW_LEFT == event.key) {
             if (xPos == 4) xPos -= 3;
             else if (side && xPos == 0) {
+                num--;
                 side = 0;
                 xPos = 0;
             }
@@ -288,10 +288,19 @@ void moving_cursor() {
         } else if (TB_KEY_ARROW_RIGHT == event.key) {
             if (xPos == 1) xPos += 3;
             else if (!side && xPos == 5) {
+                num++;
                 side = 1;
                 xPos = 0;
             }
             else if (xPos < 5) xPos++;
+        } else if ((xPos == 0 || xPos == 4) && event.ch >= 'a' && event.ch <= 'h'){
+            if (xPos ==0) (*getMove(num))->point->c = event.ch - 'a';
+            else (*getMove(num))->point->next->c = event.ch - 'a';
+            list_moves(start_move, end_move);
+        } else if ((xPos == 1 || xPos == 5) && event.ch >= '0' && event.ch <= '8'){
+            if (xPos == 1) (*getMove(num))->point->r = event.ch - '0';
+            else (*getMove(num))->point->next->r = event.ch - '0';
+            list_moves(start_move, end_move);
         }
         tb_set_cursor(xPos+side*(midX-7), line);
         moveBoard(num, board);
@@ -307,40 +316,6 @@ void moveBoard(int n, char boardIn[8][8]) {
     char **myBoard = malloc(sizeof(char*)*8);
     for (int i = 0; i < 8; i++) myBoard[i] = malloc(sizeof(char)*8);
     copy_board_ref(boardIn, myBoard);
-    //move_m(myBoard, nextMove);
-
-    //colorRange(0, tb_width(), 65, tb_height(), TB_DEFAULT);
-    int num = n;
-    /*move curr = moves;
-    int j;
-    int x = 0;
-    int y = 65;
-    while (curr->next->next != NULL && num-- > 0) {
-        point currPoint = curr->point;
-        while (currPoint->next != NULL) {
-            //fprintf(file, "%c%d", currPoint->c+'a', currPoint->r);
-            char* str = malloc(sizeof(char) * 3);
-            sprintf(str, "%c%d", currPoint->c + 'a', currPoint->r);
-            if (currPoint->next) {
-                move_noerror(currPoint->r, currPoint->c, currPoint->next->r, currPoint->next->c, myBoard);
-            }
-            if (x+2 >= tb_width()) {
-                y++;
-                x = 0;
-            }
-            printStringLeft(str, x, y, TB_DEFAULT, TB_DEFAULT);
-            x+=2;
-            currPoint = currPoint->next;
-            if (currPoint->next != NULL) {
-                //fprintf(file, "->");
-                printStringLeft("->", x, y, TB_DEFAULT, TB_DEFAULT);
-                x+=2;
-            }
-        }
-        curr = curr->next;
-        printStringLeft(" ", x, y, TB_DEFAULT, TB_DEFAULT);
-        x++;
-    }*/
 
     move curr = moves;
     while (curr->next->next != NULL && n-- > 0) {
@@ -348,4 +323,16 @@ void moveBoard(int n, char boardIn[8][8]) {
         curr = curr->next;
     }
     plot_board(myBoard);
+}
+
+move *getMove(int num) {
+    if (num == 1) return &moves;
+    int move_count = 0;
+    move curr = moves;
+    while (curr->next->next != NULL) {
+        move_count++;
+        if (move_count >= num-1) break;
+        curr = curr->next;
+    }
+    return &curr->next;
 }
