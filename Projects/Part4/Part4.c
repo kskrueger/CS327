@@ -199,8 +199,9 @@ void init_screen() {
     int midX = tb_width() / 2;
     colorRange(0, tb_width(), 0, 1, TB_CYAN);
     printStringLeft(filename, 0, 0, TB_BLACK, TB_CYAN);
-    printStringLeft("up key, down key: move cursor", 0, 1, TB_DEFAULT, TB_DEFAULT);
-    printStringLeft("ESC: quit", 0, 2, TB_DEFAULT, TB_DEFAULT);
+    printStringLeft("up key, down key, left & right move edit cursor", 0, 1, TB_DEFAULT, TB_DEFAULT);
+    printStringLeft("Type a-g and 0-8 to edit move with cursor", 0, 2, TB_DEFAULT, TB_DEFAULT);
+    printStringLeft("ESC: quit, s: save", 0, 3, TB_DEFAULT, TB_DEFAULT);
 
     printStringLeft("Black", 0, 5, TB_DEFAULT, TB_DEFAULT);
     printStringRight("Red", midX - 2, 5, TB_DEFAULT, TB_DEFAULT);
