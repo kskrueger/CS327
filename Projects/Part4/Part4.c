@@ -104,7 +104,7 @@ void colorRange(int startX, int endX, int startY, int endY, int bgColor) {
     tb_present();
 }
 
-void plot_board(char** array) {
+void plot_board(char **array) {
     int midX = tb_width() / 2;
     int gridX = (tb_width() - midX) / 8;
     int gridY = tb_height() / 8;
@@ -128,13 +128,14 @@ void plot_board(char** array) {
 
 int maxLine;
 int maxMoves = 0;
+
 void list_moves(int start_move, int end_move) {
     int midX = tb_width() / 2;
     int line = 7;
     int left = 1;
 
-    char **myBoard = malloc(sizeof(char*)*8);
-    for (int i = 0; i < 8; i++) myBoard[i] = malloc(sizeof(char)*8);
+    char **myBoard = malloc(sizeof(char *) * 8);
+    for (int i = 0; i < 8; i++) myBoard[i] = malloc(sizeof(char) * 8);
     copy_board_ref(board, myBoard);
 
     if (start_move > 0) {
@@ -144,12 +145,12 @@ void list_moves(int start_move, int end_move) {
         printStringLeft("------", 0, 6, TB_DEFAULT, TB_DEFAULT);
         printStringRight("------", midX - 2, 6, TB_DEFAULT, TB_DEFAULT);
     }
-    if (end_move < maxMoves-2) {
-        printStringLeft(":     ", 0, tb_height()-1, TB_DEFAULT, TB_DEFAULT);
-        printStringRight(":     ", midX - 2, tb_height()-1, TB_DEFAULT, TB_DEFAULT);
+    if (end_move < maxMoves - 2) {
+        printStringLeft(":     ", 0, tb_height() - 1, TB_DEFAULT, TB_DEFAULT);
+        printStringRight(":     ", midX - 2, tb_height() - 1, TB_DEFAULT, TB_DEFAULT);
     } else {
-        printStringLeft("------", 0, tb_height()-1, TB_DEFAULT, TB_DEFAULT);
-        printStringRight("------", midX - 2, tb_height()-1, TB_DEFAULT, TB_DEFAULT);
+        printStringLeft("------", 0, tb_height() - 1, TB_DEFAULT, TB_DEFAULT);
+        printStringRight("------", midX - 2, tb_height() - 1, TB_DEFAULT, TB_DEFAULT);
     }
 
     int error = 0;
@@ -192,6 +193,7 @@ void list_moves(int start_move, int end_move) {
 
 int start_move = 0;
 int end_move = 0;
+
 void init_screen() {
     tb_init();
     maxMoves = count_moves();
@@ -220,12 +222,12 @@ void init_screen() {
 
     // init move nums
     start_move = 0;
-    maxLine = count_moves()/2 + 7;
-    if (maxLine > tb_height()) maxLine = tb_height()-1;
-    end_move = (maxLine-7)*2;
+    maxLine = count_moves() / 2 + 7;
+    if (maxLine > tb_height()) maxLine = tb_height() - 1;
+    end_move = (maxLine - 7) * 2;
 
-    char **startBoard = malloc(sizeof(char*)*8);
-    for (int i = 0; i < 8; i++) startBoard[i] = malloc(sizeof(char)*8);
+    char **startBoard = malloc(sizeof(char *) * 8);
+    for (int i = 0; i < 8; i++) startBoard[i] = malloc(sizeof(char) * 8);
     copy_board_ref(board, startBoard);
     plot_board(startBoard);
     list_moves(start_move, end_move);
@@ -248,7 +250,7 @@ void moving_cursor() {
 
         if (TB_KEY_ESC == event.key) break;
         else if (TB_KEY_ARROW_UP == event.key) {
-            if (line>7 || side == 1) {
+            if (line > 7 || side == 1) {
                 num--;
                 if (side) {
                     side = 0;
@@ -257,26 +259,24 @@ void moving_cursor() {
                     side = 1;
                 }
             } else if (line == 7 && start_move >= 2) {
-                start_move-=2;
-                end_move-=2;
-                num-=2;
+                start_move -= 2;
+                end_move -= 2;
+                num -= 2;
             }
             list_moves(start_move, end_move);
         } else if (TB_KEY_ARROW_DOWN == event.key) {
-            if (end_move < maxMoves) {
-                if (line<maxLine) {
-                    num++;
-                    if (!side) {
-                        side = 1;
-                    } else {
-                        line++;
-                        side = 0;
-                    }
-                } else if (line == maxLine) {
-                    start_move+=2;
-                    end_move+=2;
-                    num+=2;
+            if (line < maxLine) {
+                num++;
+                if (!side) {
+                    side = 1;
+                } else {
+                    line++;
+                    side = 0;
                 }
+            } else if (line == maxLine && end_move < maxMoves) {
+                start_move += 2;
+                end_move += 2;
+                num += 2;
             }
             list_moves(start_move, end_move);
         } else if (TB_KEY_ARROW_LEFT == event.key) {
@@ -285,23 +285,21 @@ void moving_cursor() {
                 num--;
                 side = 0;
                 xPos = 0;
-            }
-            else if (xPos > 0) xPos--;
+            } else if (xPos > 0) xPos--;
         } else if (TB_KEY_ARROW_RIGHT == event.key) {
             if (xPos == 1) xPos += 3;
             else if (!side && xPos == 5) {
                 num++;
                 side = 1;
                 xPos = 0;
-            }
-            else if (xPos < 5) xPos++;
-        } else if ((xPos == 0 || xPos == 4) && event.ch >= 'a' && event.ch <= 'h'){
-            if (xPos ==0) (*getMove(num))->point->c = event.ch - 'a';
+            } else if (xPos < 5) xPos++;
+        } else if ((xPos == 0 || xPos == 4) && event.ch >= 'a' && event.ch <= 'h') {
+            if (xPos == 0) (*getMove(num))->point->c = event.ch - 'a';
             else (*getMove(num))->point->next->c = event.ch - 'a';
             list_moves(start_move, end_move);
             colorRange(strlen(filename) + 5, tb_width(), 0, 1, TB_CYAN);
             printStringLeft("(Edited... press s to save)", strlen(filename) + 5, 0, TB_BLACK, TB_CYAN);
-        } else if ((xPos == 1 || xPos == 5) && event.ch >= '0' && event.ch <= '8'){
+        } else if ((xPos == 1 || xPos == 5) && event.ch >= '0' && event.ch <= '8') {
             if (xPos == 1) (*getMove(num))->point->r = event.ch - '0';
             else (*getMove(num))->point->next->r = event.ch - '0';
             list_moves(start_move, end_move);
@@ -312,7 +310,7 @@ void moving_cursor() {
             colorRange(strlen(filename) + 5, tb_width(), 0, 1, TB_CYAN);
             printStringLeft("(file saved)", strlen(filename) + 5, 0, TB_BLACK, TB_CYAN);
         }
-        tb_set_cursor(xPos+side*(midX-7), line);
+        tb_set_cursor(xPos + side * (midX - 7), line);
         moveBoard(num, board);
 
         tb_present();
@@ -320,11 +318,11 @@ void moving_cursor() {
 }
 
 void moveBoard(int n, char boardIn[8][8]) {
-    char* str = malloc(sizeof(char)*3);
+    char *str = malloc(sizeof(char) * 3);
     sprintf(str, "%d  ", n);
     printStringLeft(str, 1, 4, TB_DEFAULT, TB_DEFAULT);
-    char **myBoard = malloc(sizeof(char*)*8);
-    for (int i = 0; i < 8; i++) myBoard[i] = malloc(sizeof(char)*8);
+    char **myBoard = malloc(sizeof(char *) * 8);
+    for (int i = 0; i < 8; i++) myBoard[i] = malloc(sizeof(char) * 8);
     copy_board_ref(boardIn, myBoard);
 
     move curr = moves;
@@ -341,7 +339,7 @@ move *getMove(int num) {
     move curr = moves;
     while (curr->next->next != NULL) {
         move_count++;
-        if (move_count >= num-1) break;
+        if (move_count >= num - 1) break;
         curr = curr->next;
     }
     return &curr->next;
