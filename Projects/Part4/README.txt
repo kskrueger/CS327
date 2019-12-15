@@ -1,4 +1,4 @@
-This is a submission for Part 4 of the checkers project. (a few parts WIP)
+This is a submission for Part 4 of the checkers project.
 Part 1 is still implemented (including the extra credit of scanning the board in reverse)
 Part 2 is still implemented with the outputs to the exchange and human formats. (board reverse is implemented)
 Part 3 is not included, per project requirements document.
@@ -13,5 +13,5 @@ Part 4 is implemented to include the following options:
     Hotkeys display
     Moving cursor
     Scrolling
-    Ability to change/append move (WIP)
+    Ability to change move
     Ability to save edits
