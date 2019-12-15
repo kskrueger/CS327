@@ -244,6 +244,7 @@ void moving_cursor() {
     while (1) {
         struct tb_event event;
         tb_poll_event(&event);
+
         if (TB_KEY_ESC == event.key) break;
         else if (TB_KEY_ARROW_UP == event.key) {
             if (line>7 || side == 1) {
@@ -297,10 +298,18 @@ void moving_cursor() {
             if (xPos ==0) (*getMove(num))->point->c = event.ch - 'a';
             else (*getMove(num))->point->next->c = event.ch - 'a';
             list_moves(start_move, end_move);
+            colorRange(strlen(filename) + 5, tb_width(), 0, 1, TB_CYAN);
+            printStringLeft("(Edited... press s to save)", strlen(filename) + 5, 0, TB_BLACK, TB_CYAN);
         } else if ((xPos == 1 || xPos == 5) && event.ch >= '0' && event.ch <= '8'){
             if (xPos == 1) (*getMove(num))->point->r = event.ch - '0';
             else (*getMove(num))->point->next->r = event.ch - '0';
             list_moves(start_move, end_move);
+            colorRange(strlen(filename) + 5, tb_width(), 0, 1, TB_CYAN);
+            printStringLeft("(Edited... press s to save)", strlen(filename) + 5, 0, TB_BLACK, TB_CYAN);
+        } else if (event.ch == 's') {
+            writeFile(filename);
+            colorRange(strlen(filename) + 5, tb_width(), 0, 1, TB_CYAN);
+            printStringLeft("(file saved)", strlen(filename) + 5, 0, TB_BLACK, TB_CYAN);
         }
         tb_set_cursor(xPos+side*(midX-7), line);
         moveBoard(num, board);

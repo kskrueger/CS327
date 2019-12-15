@@ -733,3 +733,75 @@ int move_noerror(int start_r, int start_c, int end_r, int end_c, char** myBoard)
     moves_made++;
     return 1;
 }
+
+int searchPos(char *word) {
+    skip_whitespace(); // skip over whitespace and comments
+    char c;
+    int i = 0;
+    // loop through to search for word and increment line number for each \n character
+    while (fscanf(stdin, "%c", &c) == 1 && c != EOF && (c == word[i++])) if (c == '\n') line_num++;
+    ungetc(c, stdin); // put the last char back so next function can use it
+    return ftell(stdin); // return 1 if word was found
+}
+
+int search_word(char *word) {
+    int found = 0;
+    char ch = fgetc(stdin);
+    int length = strlen(word);
+    int index = 0;
+    int comment = 0;
+    while (!found && ch != EOF) {
+        index = ftell(stdin);
+        if (ch == '#' || comment) {
+            comment = 1;
+            if (ch == '\n') comment = 0;
+        } else if (ch == word[0]) {
+            int i;
+            for (i = 0; i < length; i++) {
+                if (ch != word[i]) {
+                    found = 0;
+                    break;
+                } else {
+                    found = 1;
+                }
+                ch = fgetc(stdin);
+            }
+        }
+        fseek(stdin, index, SEEK_SET);
+        ch = fgetc(stdin);
+    }
+    if (ch == EOF || !found) {
+        fseek(stdin, 0, SEEK_SET);
+        return -1;
+    }
+    fseek(stdin, index-1+length, SEEK_SET);
+    return index + strlen(word);
+}
+
+void writeFile(char* filename_in) {
+    rewind(stdin);
+    int pos = search_word("MOVES:");
+    rewind(stdin);
+    FILE *file = fopen(filename_in, "w");
+    for (int i = 0; i < pos; i++) {
+        fprintf(file, "%c", getc(stdin));
+    }
+
+    move curr = moves;
+    int side = 0;
+    while (curr->next->next != NULL) {
+        point currPoint = curr->point;
+        while (currPoint->next != NULL) {
+            fprintf(file, "%c%d", currPoint->c + 'a', currPoint->r);
+            currPoint = currPoint->next;
+            if (currPoint->next != NULL) {
+                fprintf(file, "->");
+            }
+        }
+        side = !side;
+        if (side % 2 == 0) fprintf(file, "\n");
+        else fprintf(file, "\t");
+        curr = curr->next;
+    }
+    fclose(file);
+}
