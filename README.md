@@ -1,2 +1,2 @@
-# CS327
-The project implemented here is a checkers game written in C with a little bit of C++ for a class covering "Advanced Programming Techniques in C/C++".
+# CS327 - Advanced Programming Techniques in C/C++
+The main project here implemented here is a checkers game written in C and uses the Termbox library for drawing the board and GUI.
